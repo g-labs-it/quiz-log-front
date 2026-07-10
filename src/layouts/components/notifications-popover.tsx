@@ -120,31 +120,54 @@ export function NotificationsPopover({ data = [], sx, ...other }: NotificationsP
         <Divider sx={{ borderStyle: 'dashed' }} />
 
         <Scrollbar fillContent sx={{ minHeight: 240, maxHeight: { xs: 360, sm: 'none' } }}>
-          <List
-            disablePadding
-            subheader={
-              <ListSubheader disableSticky sx={{ py: 1, px: 2.5, typography: 'overline' }}>
-                New
-              </ListSubheader>
-            }
-          >
-            {notifications.slice(0, 2).map((notification) => (
-              <NotificationItem key={notification.id} notification={notification} />
-            ))}
-          </List>
+          {notifications.length === 0 ? (
+            <Box
+              sx={{
+                p: 5,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                height: 1,
+                minHeight: 200,
+              }}
+            >
+              <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                No notifications
+              </Typography>
+            </Box>
+          ) : (
+            <>
+              {notifications.slice(0, 2).length > 0 && (
+                <List
+                  disablePadding
+                  subheader={
+                    <ListSubheader disableSticky sx={{ py: 1, px: 2.5, typography: 'overline' }}>
+                      New
+                    </ListSubheader>
+                  }
+                >
+                  {notifications.slice(0, 2).map((notification) => (
+                    <NotificationItem key={notification.id} notification={notification} />
+                  ))}
+                </List>
+              )}
 
-          <List
-            disablePadding
-            subheader={
-              <ListSubheader disableSticky sx={{ py: 1, px: 2.5, typography: 'overline' }}>
-                Before that
-              </ListSubheader>
-            }
-          >
-            {notifications.slice(2, 5).map((notification) => (
-              <NotificationItem key={notification.id} notification={notification} />
-            ))}
-          </List>
+              {notifications.slice(2, 5).length > 0 && (
+                <List
+                  disablePadding
+                  subheader={
+                    <ListSubheader disableSticky sx={{ py: 1, px: 2.5, typography: 'overline' }}>
+                      Before that
+                    </ListSubheader>
+                  }
+                >
+                  {notifications.slice(2, 5).map((notification) => (
+                    <NotificationItem key={notification.id} notification={notification} />
+                  ))}
+                </List>
+              )}
+            </>
+          )}
         </Scrollbar>
 
         <Divider sx={{ borderStyle: 'dashed' }} />

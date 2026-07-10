@@ -1,11 +1,11 @@
 import type { Theme, SxProps, Breakpoint } from '@mui/material/styles';
 
 import { useEffect } from 'react';
-import { varAlpha } from 'minimal-shared/utils';
 
 import Box from '@mui/material/Box';
 import ListItem from '@mui/material/ListItem';
 import { useTheme } from '@mui/material/styles';
+import Typography from '@mui/material/Typography';
 import ListItemButton from '@mui/material/ListItemButton';
 import Drawer, { drawerClasses } from '@mui/material/Drawer';
 
@@ -15,11 +15,7 @@ import { RouterLink } from 'src/routes/components';
 import { Logo } from 'src/components/logo';
 import { Scrollbar } from 'src/components/scrollbar';
 
-import { NavUpgrade } from '../components/nav-upgrade';
-import { WorkspacesPopover } from '../components/workspaces-popover';
-
 import type { NavItem } from '../nav-config-dashboard';
-import type { WorkspacesPopoverProps } from '../components/workspaces-popover';
 
 // ----------------------------------------------------------------------
 
@@ -29,7 +25,7 @@ export type NavContentProps = {
     topArea?: React.ReactNode;
     bottomArea?: React.ReactNode;
   };
-  workspaces: WorkspacesPopoverProps['data'];
+  workspaces?: any[];
   sx?: SxProps<Theme>;
 };
 
@@ -55,7 +51,8 @@ export function NavDesktop({
         flexDirection: 'column',
         zIndex: 'var(--layout-nav-zIndex)',
         width: 'var(--layout-nav-vertical-width)',
-        borderRight: `1px solid ${varAlpha(theme.vars.palette.grey['500Channel'], 0.12)}`,
+        bgcolor: '#000000',
+        borderRight: 'none',
         [theme.breakpoints.up(layoutQuery)]: {
           display: 'flex',
         },
@@ -96,6 +93,8 @@ export function NavMobile({
           px: 2.5,
           overflow: 'unset',
           width: 'var(--layout-nav-mobile-width)',
+          bgcolor: '#000000',
+          color: 'common.white',
           ...sx,
         },
       }}
@@ -112,11 +111,20 @@ export function NavContent({ data, slots, workspaces, sx }: NavContentProps) {
 
   return (
     <>
-      <Logo />
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 3 }}>
+        <Logo sx={{ width: 40, height: 40 }} />
+        <Typography
+          variant="h5"
+          sx={{ fontWeight: 800, color: 'common.white', letterSpacing: 0.5 }}
+        >
+          <Box component="span" sx={{ color: 'primary.main' }}>
+            G
+          </Box>{' '}
+          Labs
+        </Typography>
+      </Box>
 
       {slots?.topArea}
-
-      <WorkspacesPopover data={workspaces} sx={{ my: 2 }} />
 
       <Scrollbar fillContent>
         <Box
@@ -150,20 +158,24 @@ export function NavContent({ data, slots, workspaces, sx }: NavContentProps) {
                     sx={[
                       (theme) => ({
                         pl: 2,
-                        py: 1,
+                        py: 1.5,
                         gap: 2,
                         pr: 1.5,
                         borderRadius: 0.75,
                         typography: 'body2',
                         fontWeight: 'fontWeightMedium',
-                        color: theme.vars.palette.text.secondary,
+                        color: '#919EAB',
                         minHeight: 44,
+                        '&:hover': {
+                          color: 'common.white',
+                          bgcolor: 'rgba(255, 255, 255, 0.08)',
+                        },
                         ...(isActived && {
                           fontWeight: 'fontWeightSemiBold',
-                          color: theme.vars.palette.primary.main,
-                          bgcolor: varAlpha(theme.vars.palette.primary.mainChannel, 0.08),
+                          color: 'common.white',
+                          bgcolor: theme.vars.palette.primary.main,
                           '&:hover': {
-                            bgcolor: varAlpha(theme.vars.palette.primary.mainChannel, 0.16),
+                            bgcolor: theme.vars.palette.primary.dark,
                           },
                         }),
                       }),
@@ -187,8 +199,6 @@ export function NavContent({ data, slots, workspaces, sx }: NavContentProps) {
       </Scrollbar>
 
       {slots?.bottomArea}
-
-      <NavUpgrade />
     </>
   );
 }

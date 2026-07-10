@@ -2,6 +2,7 @@ import type { Theme, SxProps, CSSObject } from '@mui/material/styles';
 
 import { mergeClasses } from 'minimal-shared/utils';
 
+import Box from '@mui/material/Box';
 import { styled } from '@mui/material/styles';
 import GlobalStyles from '@mui/material/GlobalStyles';
 
@@ -37,10 +38,17 @@ export function LayoutSection({
     <>
       {inputGlobalStyles}
 
-      <LayoutRoot
+      <Box
         id="root__layout"
         className={mergeClasses([layoutClasses.root, className])}
-        sx={sx}
+        sx={[
+          {
+            display: 'flex',
+            minHeight: 1,
+            flexDirection: 'column',
+          },
+          ...(Array.isArray(sx) ? sx : [sx]),
+        ]}
         {...other}
       >
         {sidebarSection ? (
@@ -59,17 +67,19 @@ export function LayoutSection({
             {footerSection}
           </>
         )}
-      </LayoutRoot>
+      </Box>
     </>
   );
 }
 
 // ----------------------------------------------------------------------
 
-const LayoutRoot = styled('div')``;
-
-const LayoutSidebarContainer = styled('div')(() => ({
+const LayoutSidebarContainer = styled('div')(({ theme }) => ({
   display: 'flex',
   flex: '1 1 auto',
   flexDirection: 'column',
+  [theme.breakpoints.up('lg')]: {
+    paddingLeft: 'var(--layout-nav-vertical-width)',
+    transition: 'padding-left 120ms linear',
+  },
 }));

@@ -7,10 +7,9 @@ import Box from '@mui/material/Box';
 import Alert from '@mui/material/Alert';
 import { useTheme } from '@mui/material/styles';
 
-import { _langs, _notifications } from 'src/_mock';
+import { _notifications } from 'src/_mock';
 
 import { NavMobile, NavDesktop } from './nav';
-import { layoutClasses } from '../core/classes';
 import { _account } from '../nav-config-account';
 import { dashboardLayoutVars } from './css-vars';
 import { navData } from '../nav-config-dashboard';
@@ -21,7 +20,6 @@ import { MenuButton } from '../components/menu-button';
 import { HeaderSection } from '../core/header-section';
 import { LayoutSection } from '../core/layout-section';
 import { AccountPopover } from '../components/account-popover';
-import { LanguagePopover } from '../components/language-popover';
 import { NotificationsPopover } from '../components/notifications-popover';
 
 import type { MainSectionProps } from '../core/main-section';
@@ -79,9 +77,6 @@ export function DashboardLayout({
           {/** @slot Searchbar */}
           <Searchbar />
 
-          {/** @slot Language popover */}
-          <LanguagePopover data={_langs} />
-
           {/** @slot Notifications popover */}
           <NotificationsPopover data={_notifications} />
 
@@ -127,20 +122,7 @@ export function DashboardLayout({
        * @Styles
        *************************************** */
       cssVars={{ ...dashboardLayoutVars(theme), ...cssVars }}
-      sx={[
-        {
-          [`& .${layoutClasses.sidebarContainer}`]: {
-            [theme.breakpoints.up(layoutQuery)]: {
-              pl: 'var(--layout-nav-vertical-width)',
-              transition: theme.transitions.create(['padding-left'], {
-                easing: 'var(--layout-transition-easing)',
-                duration: 'var(--layout-transition-duration)',
-              }),
-            },
-          },
-        },
-        ...(Array.isArray(sx) ? sx : [sx]),
-      ]}
+      sx={[...(Array.isArray(sx) ? sx : [sx])]}
     >
       {renderMain()}
     </LayoutSection>
