@@ -222,7 +222,6 @@ export function ProfileView() {
                         label="Phone number"
                         value={profileData.phone}
                         onChange={handleProfileChange}
-                        required
                         slotProps={{ inputLabel: { shrink: true } }}
                       />
                       <TextField

@@ -91,27 +91,18 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   // UPDATE PROFILE
   const updateProfile = useCallback(async (data: any) => {
-    // If the data contains files, we send a multipart/form-data.
-    // In Laravel, PUT requests don't natively parse form data/files,
-    // so we submit via POST with '_method: PUT'.
-    let response;
-    if (data.profile_picture instanceof File) {
-      const formData = new FormData();
-      Object.keys(data).forEach((key) => {
-        if (data[key] !== undefined && data[key] !== null) {
-          formData.append(key, data[key]);
-        }
-      });
-      formData.append('_method', 'PUT');
+    // Always use POST with FormData — PHP only populates $_FILES on POST requests.
+    // PUT+multipart/form-data causes file uploads to arrive broken regardless of _method spoofing.
+    const formData = new FormData();
+    Object.keys(data).forEach((key) => {
+      if (data[key] !== undefined && data[key] !== null && data[key] !== '') {
+        formData.append(key, data[key]);
+      }
+    });
 
-      response = await axiosInstance.post('/auth/update-profile', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
-    } else {
-      response = await axiosInstance.put('/auth/update-profile', data);
-    }
+    const response = await axiosInstance.post('/auth/update-profile', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
 
     const updatedUser = response.data.data as UserType;
     setState((prevState) => ({
