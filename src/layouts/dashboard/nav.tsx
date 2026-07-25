@@ -206,7 +206,7 @@ export function NavContent({ data, slots, workspaces, sx, siteName = 'G Labs' }:
                     </ListItemButton>
 
                     <Collapse in={isOpen} timeout="auto" unmountOnExit>
-                      <List component="div" disablePadding sx={{ pl: 4, mt: 0.5 }}>
+                      <List component="div" disablePadding sx={{ pl: 0, mt: 0.5 }}>
                         {item.children.map((child) => {
                           const isSubActived = pathname.startsWith(child.path);
 
@@ -238,6 +238,36 @@ export function NavContent({ data, slots, workspaces, sx, siteName = 'G Labs' }:
                                   }),
                                 ]}
                               >
+                                <Box
+                                  component="span"
+                                  sx={{
+                                    width: 24,
+                                    height: 24,
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    mr: 2,
+                                  }}
+                                >
+                                  <Box
+                                    component="span"
+                                    sx={{
+                                      width: 4,
+                                      height: 4,
+                                      borderRadius: '50%',
+                                      bgcolor: isSubActived ? 'common.white' : '#919EAB',
+                                      transition: (theme) =>
+                                        theme.transitions.create(['transform'], {
+                                          duration: theme.transitions.duration.shorter,
+                                        }),
+                                      ...(isSubActived && {
+                                        transform: 'scale(1.5)',
+                                        bgcolor: 'common.white',
+                                      }),
+                                    }}
+                                  />
+                                </Box>
+
                                 <Box component="span" sx={{ flexGrow: 1 }}>
                                   {child.title}
                                 </Box>

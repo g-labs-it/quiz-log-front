@@ -25,16 +25,17 @@ export const navData = [
     permission: 'view_dashboard',
   },
   {
-    title: 'User',
-    path: '/user',
-    icon: icon('ic-user'),
-    permission: 'view_user_management',
-  },
-  {
-    title: 'Roles & RBAC',
-    path: '/roles',
-    icon: icon('ic-lock'),
-    permission: 'view_role_management',
+    title: 'Master Data',
+    path: '/master-data',
+    icon: icon('ic-db'),
+    permission: 'masterdata_management',
+    children: [
+      {
+        title: 'Subjects',
+        path: '/subjects',
+        permission: 'view_masterdata_management',
+      },
+    ],
   },
   {
     title: 'Institutes',
@@ -43,15 +44,19 @@ export const navData = [
     permission: 'institue_management',
   },
   {
-    title: 'Master Data',
-    path: '/master-data',
-    icon: icon('ic-analytics'),
-    permission: 'masterdata_management',
+    title: 'Access Control',
+    path: '/access-control',
+    icon: icon('ic-lock'),
     children: [
       {
-        title: 'Subjects',
-        path: '/subjects',
-        permission: 'view_masterdata_management',
+        title: 'Users',
+        path: '/user',
+        permission: 'view_user_management',
+      },
+      {
+        title: 'Roles & RBAC',
+        path: '/roles',
+        permission: 'view_role_management',
       },
     ],
   },

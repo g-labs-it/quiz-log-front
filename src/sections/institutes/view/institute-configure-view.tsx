@@ -9,22 +9,16 @@ import Stack from '@mui/material/Stack';
 import Alert from '@mui/material/Alert';
 import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
-import Select from '@mui/material/Select';
 import Tooltip from '@mui/material/Tooltip';
 import TableRow from '@mui/material/TableRow';
-import MenuItem from '@mui/material/MenuItem';
-import Checkbox from '@mui/material/Checkbox';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
 import TableHead from '@mui/material/TableHead';
 import TextField from '@mui/material/TextField';
-import InputLabel from '@mui/material/InputLabel';
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
-import FormControl from '@mui/material/FormControl';
 import DialogTitle from '@mui/material/DialogTitle';
-import ListItemText from '@mui/material/ListItemText';
-import OutlinedInput from '@mui/material/OutlinedInput';
+import Autocomplete from '@mui/material/Autocomplete';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import TableContainer from '@mui/material/TableContainer';
@@ -49,13 +43,19 @@ export interface TeacherProps {
   }[];
 }
 
+interface SubjectOption {
+  id: number;
+  name: string;
+  code: string;
+}
+
 export function InstituteConfigureView() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
   const [instituteName, setInstituteName] = useState('');
   const [teachers, setTeachers] = useState<TeacherProps[]>([]);
-  const [allSubjects, setAllSubjects] = useState<any[]>([]);
+  const [allSubjects, setAllSubjects] = useState<SubjectOption[]>([]);
 
   const [loading, setLoading] = useState(true);
   const [submitLoading, setSubmitLoading] = useState(false);
@@ -67,7 +67,7 @@ export function InstituteConfigureView() {
   const [email, setEmail] = useState('');
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
-  const [selectedSubjects, setSelectedSubjects] = useState<number[]>([]);
+  const [selectedSubjects, setSelectedSubjects] = useState<SubjectOption[]>([]);
   const [checkingEmail, setCheckingEmail] = useState(false);
   const [userExists, setUserExists] = useState(false);
 
@@ -76,7 +76,7 @@ export function InstituteConfigureView() {
   const [editTeacher, setEditTeacher] = useState<TeacherProps | null>(null);
   const [editName, setEditName] = useState('');
   const [editPhone, setEditPhone] = useState('');
-  const [editSubjects, setEditSubjects] = useState<number[]>([]);
+  const [editSubjects, setEditSubjects] = useState<SubjectOption[]>([]);
 
   const fetchInstituteDetails = useCallback(async () => {
     try {
@@ -116,7 +116,7 @@ export function InstituteConfigureView() {
     fetchAllSubjects();
   }, [fetchInstituteDetails, fetchAssociatedTeachers, fetchAllSubjects]);
 
-  // ─── Associate handlers ───────────────────────────────────────
+  // ─── Associate handlers ──────────────────────────────────────
   const handleEmailBlur = async () => {
     if (!email || !email.includes('@')) return;
     setCheckingEmail(true);
@@ -159,7 +159,7 @@ export function InstituteConfigureView() {
         email,
         name: userExists ? undefined : name,
         phone: userExists ? undefined : phone || undefined,
-        subjects: selectedSubjects,
+        subjects: selectedSubjects.map((s) => s.id),
       });
       setSuccessMsg(
         userExists
@@ -181,7 +181,10 @@ export function InstituteConfigureView() {
     setEditTeacher(teacher);
     setEditName(teacher.name);
     setEditPhone(teacher.phone || '');
-    setEditSubjects(teacher.subjects ? teacher.subjects.map((s) => s.id) : []);
+    const preSelected = teacher.subjects
+      ? allSubjects.filter((s) => teacher.subjects!.some((ts) => ts.id === s.id))
+      : [];
+    setEditSubjects(preSelected);
     setErrorMsg('');
     setOpenEditModal(true);
   };
@@ -196,7 +199,7 @@ export function InstituteConfigureView() {
       await axiosInstance.put(`/institutes/${id}/teachers/${editTeacher.id}`, {
         name: editName,
         phone: editPhone || null,
-        subjects: editSubjects,
+        subjects: editSubjects.map((s) => s.id),
       });
       setSuccessMsg('Teacher updated successfully!');
       setOpenEditModal(false);
@@ -224,16 +227,6 @@ export function InstituteConfigureView() {
       setLoading(false);
     }
   };
-
-  // ─── Subject multi-select renderer ──────────────────────────
-  const renderSubjectChips = (selected: number[]) => (
-    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-      {selected.map((value) => {
-        const subject = allSubjects.find((s) => s.id === value);
-        return <Chip key={value} label={subject ? subject.name : value} size="small" />;
-      })}
-    </Box>
-  );
 
   return (
     <DashboardContent>
@@ -396,7 +389,7 @@ export function InstituteConfigureView() {
                 {errorMsg}
               </Alert>
             )}
-            <Stack spacing={3} sx={{ mt: 1 }}>
+            <Stack spacing={2.5} sx={{ mt: 1 }}>
               <TextField
                 fullWidth
                 label="Email Address"
@@ -433,24 +426,35 @@ export function InstituteConfigureView() {
                 helperText={userExists ? 'Phone can be edited via the Edit button.' : ''}
               />
 
-              <FormControl fullWidth required>
-                <InputLabel id="assoc-subjects-label">Subjects</InputLabel>
-                <Select
-                  labelId="assoc-subjects-label"
-                  multiple
-                  value={selectedSubjects}
-                  onChange={(e) => setSelectedSubjects(e.target.value as number[])}
-                  input={<OutlinedInput label="Subjects" />}
-                  renderValue={renderSubjectChips}
-                >
-                  {allSubjects.map((sub) => (
-                    <MenuItem key={sub.id} value={sub.id}>
-                      <Checkbox checked={selectedSubjects.indexOf(sub.id) > -1} />
-                      <ListItemText primary={`${sub.name} (${sub.code})`} />
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
+              <Autocomplete
+                multiple
+                options={allSubjects}
+                getOptionLabel={(option) => `${option.name} (${option.code})`}
+                value={selectedSubjects}
+                onChange={(_, newValue) => setSelectedSubjects(newValue)}
+                isOptionEqualToValue={(option, value) => option.id === value.id}
+                renderTags={(tagValue, getTagProps) =>
+                  tagValue.map((option, index) => (
+                    <Chip
+                      label={`${option.name} (${option.code})`}
+                      size="small"
+                      {...getTagProps({ index })}
+                      key={option.id}
+                    />
+                  ))
+                }
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label="Subjects"
+                    placeholder={selectedSubjects.length === 0 ? 'Search and select subjects...' : ''}
+                    required={selectedSubjects.length === 0}
+                    helperText="Type to search. Click a subject to add it."
+                  />
+                )}
+                disableCloseOnSelect
+                limitTags={4}
+              />
             </Stack>
           </DialogContent>
           <DialogActions>
@@ -484,7 +488,7 @@ export function InstituteConfigureView() {
                 {errorMsg}
               </Alert>
             )}
-            <Stack spacing={3} sx={{ mt: 1 }}>
+            <Stack spacing={2.5} sx={{ mt: 1 }}>
               <TextField
                 fullWidth
                 label="Teacher Name"
@@ -500,24 +504,35 @@ export function InstituteConfigureView() {
                 onChange={(e) => setEditPhone(e.target.value)}
               />
 
-              <FormControl fullWidth required>
-                <InputLabel id="edit-subjects-label">Subjects</InputLabel>
-                <Select
-                  labelId="edit-subjects-label"
-                  multiple
-                  value={editSubjects}
-                  onChange={(e) => setEditSubjects(e.target.value as number[])}
-                  input={<OutlinedInput label="Subjects" />}
-                  renderValue={renderSubjectChips}
-                >
-                  {allSubjects.map((sub) => (
-                    <MenuItem key={sub.id} value={sub.id}>
-                      <Checkbox checked={editSubjects.indexOf(sub.id) > -1} />
-                      <ListItemText primary={`${sub.name} (${sub.code})`} />
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
+              <Autocomplete
+                multiple
+                options={allSubjects}
+                getOptionLabel={(option) => `${option.name} (${option.code})`}
+                value={editSubjects}
+                onChange={(_, newValue) => setEditSubjects(newValue)}
+                isOptionEqualToValue={(option, value) => option.id === value.id}
+                renderTags={(tagValue, getTagProps) =>
+                  tagValue.map((option, index) => (
+                    <Chip
+                      label={`${option.name} (${option.code})`}
+                      size="small"
+                      {...getTagProps({ index })}
+                      key={option.id}
+                    />
+                  ))
+                }
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label="Subjects"
+                    placeholder={editSubjects.length === 0 ? 'Search and select subjects...' : ''}
+                    required={editSubjects.length === 0}
+                    helperText="Type to filter. Selected subjects are shown as chips above."
+                  />
+                )}
+                disableCloseOnSelect
+                limitTags={4}
+              />
             </Stack>
           </DialogContent>
           <DialogActions>

@@ -61,6 +61,7 @@ export function InstitutesView() {
     }
   }, [location.state]);
   
+  const canView = user?.all_permissions?.includes('view_institue_management');
   const canConfigure = user?.all_permissions?.includes('configure_institue_management');
   const canCreate = user?.all_permissions?.includes('create_institue_management');
   const canEdit = user?.all_permissions?.includes('update_institue_management');
@@ -246,6 +247,27 @@ export function InstitutesView() {
                     </TableCell>
                     <TableCell align="right">
                       <Stack direction="row" spacing={1} justifyContent="flex-end">
+                        {canView && (
+                          <Tooltip title="Overview">
+                            <IconButton
+                              onClick={() => router.push(`/institutes/${row.id}/overview`)}
+                              sx={{
+                                width: 36,
+                                height: 36,
+                                borderRadius: '10px',
+                                bgcolor: '#00b37e',
+                                color: '#fff',
+                                '&:hover': {
+                                  bgcolor: '#00b37e',
+                                  opacity: 0.9,
+                                },
+                              }}
+                            >
+                              <Iconify icon="solar:eye-bold" width={20} />
+                            </IconButton>
+                          </Tooltip>
+                        )}
+
                         {canConfigure && (
                           <Tooltip title="Configure">
                             <IconButton
