@@ -56,29 +56,33 @@ export function InstituteConfigureView() {
   const [instituteName, setInstituteName] = useState('');
   const [teachers, setTeachers] = useState<TeacherProps[]>([]);
   const [allSubjects, setAllSubjects] = useState<any[]>([]);
-  
+
   const [loading, setLoading] = useState(true);
   const [submitLoading, setSubmitLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
 
+  // ── Associate Modal ──
   const [openAssociateModal, setOpenAssociateModal] = useState(false);
-  
-  // Associate Form States
   const [email, setEmail] = useState('');
   const [name, setName] = useState('');
+  const [phone, setPhone] = useState('');
   const [selectedSubjects, setSelectedSubjects] = useState<number[]>([]);
   const [checkingEmail, setCheckingEmail] = useState(false);
   const [userExists, setUserExists] = useState(false);
 
+  // ── Edit Modal ──
+  const [openEditModal, setOpenEditModal] = useState(false);
+  const [editTeacher, setEditTeacher] = useState<TeacherProps | null>(null);
+  const [editName, setEditName] = useState('');
+  const [editPhone, setEditPhone] = useState('');
+  const [editSubjects, setEditSubjects] = useState<number[]>([]);
+
   const fetchInstituteDetails = useCallback(async () => {
     try {
       const response = await axiosInstance.get(`/institutes/${id}`);
-      if (response.data && response.data.data) {
-        setInstituteName(response.data.data.name);
-      }
+      if (response.data?.data) setInstituteName(response.data.data.name);
     } catch (err: any) {
-      console.error(err);
       setErrorMsg(err.message || 'Failed to fetch institute details');
     }
   }, [id]);
@@ -87,11 +91,8 @@ export function InstituteConfigureView() {
     setLoading(true);
     try {
       const response = await axiosInstance.get(`/institutes/${id}/teachers`);
-      if (response.data && response.data.data) {
-        setTeachers(response.data.data);
-      }
+      if (response.data?.data) setTeachers(response.data.data);
     } catch (err: any) {
-      console.error(err);
       setErrorMsg(err.message || 'Failed to fetch teachers');
     } finally {
       setLoading(false);
@@ -100,12 +101,9 @@ export function InstituteConfigureView() {
 
   const fetchAllSubjects = useCallback(async () => {
     try {
-      const response = await axiosInstance.get('/subjects', {
-        params: { per_page: 200 }
-      });
-      if (response.data && response.data.data) {
-        const subjectsList = response.data.data.data || response.data.data || [];
-        setAllSubjects(subjectsList);
+      const response = await axiosInstance.get('/subjects', { params: { per_page: 200 } });
+      if (response.data?.data) {
+        setAllSubjects(response.data.data.data || response.data.data || []);
       }
     } catch (err) {
       console.error('Failed to fetch subjects list', err);
@@ -118,18 +116,18 @@ export function InstituteConfigureView() {
     fetchAllSubjects();
   }, [fetchInstituteDetails, fetchAssociatedTeachers, fetchAllSubjects]);
 
+  // ─── Associate handlers ───────────────────────────────────────
   const handleEmailBlur = async () => {
     if (!email || !email.includes('@')) return;
     setCheckingEmail(true);
     try {
-      const response = await axiosInstance.get('/users', {
-        params: { search: email },
-      });
+      const response = await axiosInstance.get('/users', { params: { search: email } });
       const usersList = response.data?.data?.data || response.data?.data || [];
       const exactMatch = usersList.find((u: any) => u.email.toLowerCase() === email.toLowerCase());
       if (exactMatch) {
         setUserExists(true);
         setName(exactMatch.name);
+        setPhone(exactMatch.phone || '');
       } else {
         setUserExists(false);
       }
@@ -143,10 +141,10 @@ export function InstituteConfigureView() {
   const handleOpenAssociate = () => {
     setEmail('');
     setName('');
+    setPhone('');
     setSelectedSubjects([]);
     setUserExists(false);
     setErrorMsg('');
-    setSuccessMsg('');
     setOpenAssociateModal(true);
   };
 
@@ -155,48 +153,87 @@ export function InstituteConfigureView() {
     if (!email || selectedSubjects.length === 0) return;
     setSubmitLoading(true);
     setErrorMsg('');
-    setSuccessMsg('');
 
     try {
       await axiosInstance.post(`/institutes/${id}/teachers`, {
         email,
         name: userExists ? undefined : name,
+        phone: userExists ? undefined : phone || undefined,
         subjects: selectedSubjects,
       });
-      setSuccessMsg(userExists ? 'Teacher associated successfully!' : 'Teacher account created and associated successfully!');
+      setSuccessMsg(
+        userExists
+          ? 'Teacher associated successfully!'
+          : 'Teacher account created and associated successfully!'
+      );
       setOpenAssociateModal(false);
       fetchAssociatedTeachers();
     } catch (err: any) {
-      console.error(err);
-      if (err.errors) {
-        const firstError = Object.values(err.errors)[0] as string[];
-        setErrorMsg(firstError[0] || 'Failed to associate teacher');
-      } else {
-        setErrorMsg(err.message || 'Failed to associate teacher');
-      }
+      const firstError = err.errors ? (Object.values(err.errors)[0] as string[])[0] : null;
+      setErrorMsg(firstError || err.message || 'Failed to associate teacher');
     } finally {
       setSubmitLoading(false);
     }
   };
 
-  const handleRemoveTeacher = async (userId: number, userName: string) => {
-    if (!window.confirm(`Are you sure you want to remove teacher ${userName}?`)) {
-      return;
+  // ─── Edit handlers ───────────────────────────────────────────
+  const handleOpenEdit = (teacher: TeacherProps) => {
+    setEditTeacher(teacher);
+    setEditName(teacher.name);
+    setEditPhone(teacher.phone || '');
+    setEditSubjects(teacher.subjects ? teacher.subjects.map((s) => s.id) : []);
+    setErrorMsg('');
+    setOpenEditModal(true);
+  };
+
+  const handleEditSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editTeacher || editSubjects.length === 0) return;
+    setSubmitLoading(true);
+    setErrorMsg('');
+
+    try {
+      await axiosInstance.put(`/institutes/${id}/teachers/${editTeacher.id}`, {
+        name: editName,
+        phone: editPhone || null,
+        subjects: editSubjects,
+      });
+      setSuccessMsg('Teacher updated successfully!');
+      setOpenEditModal(false);
+      fetchAssociatedTeachers();
+    } catch (err: any) {
+      const firstError = err.errors ? (Object.values(err.errors)[0] as string[])[0] : null;
+      setErrorMsg(firstError || err.message || 'Failed to update teacher');
+    } finally {
+      setSubmitLoading(false);
     }
+  };
+
+  // ─── Remove handler ──────────────────────────────────────────
+  const handleRemoveTeacher = async (userId: number, userName: string) => {
+    if (!window.confirm(`Are you sure you want to remove teacher ${userName}?`)) return;
     setLoading(true);
     setErrorMsg('');
-    setSuccessMsg('');
 
     try {
       await axiosInstance.delete(`/institutes/${id}/teachers/${userId}`);
       setSuccessMsg('Teacher removed successfully!');
       fetchAssociatedTeachers();
     } catch (err: any) {
-      console.error(err);
       setErrorMsg(err.message || 'Failed to remove teacher');
       setLoading(false);
     }
   };
+
+  // ─── Subject multi-select renderer ──────────────────────────
+  const renderSubjectChips = (selected: number[]) => (
+    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+      {selected.map((value) => {
+        const subject = allSubjects.find((s) => s.id === value);
+        return <Chip key={value} label={subject ? subject.name : value} size="small" />;
+      })}
+    </Box>
+  );
 
   return (
     <DashboardContent>
@@ -209,9 +246,7 @@ export function InstituteConfigureView() {
           Back to Institutes
         </Button>
         <Stack direction="row" alignItems="center" justifyContent="space-between">
-          <Typography variant="h4">
-            Configure {instituteName || 'Institute'}
-          </Typography>
+          <Typography variant="h4">Configure {instituteName || 'Institute'}</Typography>
           <Button
             variant="contained"
             color="inherit"
@@ -228,7 +263,6 @@ export function InstituteConfigureView() {
           {errorMsg}
         </Alert>
       )}
-
       {!!successMsg && (
         <Alert severity="success" sx={{ mb: 3 }} onClose={() => setSuccessMsg('')}>
           {successMsg}
@@ -249,11 +283,8 @@ export function InstituteConfigureView() {
               <Box
                 sx={{
                   position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  bottom: 0,
-                  bgcolor: 'rgba(255, 255, 255, 0.7)',
+                  inset: 0,
+                  bgcolor: 'rgba(255,255,255,0.7)',
                   zIndex: 2,
                   display: 'flex',
                   alignItems: 'center',
@@ -265,7 +296,7 @@ export function InstituteConfigureView() {
               </Box>
             )}
 
-            <Table sx={{ minWidth: 600 }}>
+            <Table sx={{ minWidth: 700 }}>
               <TableHead>
                 <TableRow>
                   <TableCell>Name</TableCell>
@@ -299,24 +330,38 @@ export function InstituteConfigureView() {
                       )}
                     </TableCell>
                     <TableCell align="right">
-                      <Tooltip title="Remove Association">
-                        <IconButton
-                          onClick={() => handleRemoveTeacher(row.id, row.name)}
-                          sx={{
-                            width: 36,
-                            height: 36,
-                            borderRadius: '10px',
-                            bgcolor: '#ff7a5a',
-                            color: '#fff',
-                            '&:hover': {
+                      <Stack direction="row" spacing={1} justifyContent="flex-end">
+                        <Tooltip title="Edit">
+                          <IconButton
+                            onClick={() => handleOpenEdit(row)}
+                            sx={{
+                              width: 36,
+                              height: 36,
+                              borderRadius: '10px',
+                              bgcolor: '#4f80ff',
+                              color: '#fff',
+                              '&:hover': { bgcolor: '#4f80ff', opacity: 0.9 },
+                            }}
+                          >
+                            <Iconify icon="solar:pen-bold" width={20} />
+                          </IconButton>
+                        </Tooltip>
+                        <Tooltip title="Remove Association">
+                          <IconButton
+                            onClick={() => handleRemoveTeacher(row.id, row.name)}
+                            sx={{
+                              width: 36,
+                              height: 36,
+                              borderRadius: '10px',
                               bgcolor: '#ff7a5a',
-                              opacity: 0.9,
-                            },
-                          }}
-                        >
-                          <Iconify icon="solar:trash-bin-trash-bold" width={20} />
-                        </IconButton>
-                      </Tooltip>
+                              color: '#fff',
+                              '&:hover': { bgcolor: '#ff7a5a', opacity: 0.9 },
+                            }}
+                          >
+                            <Iconify icon="solar:trash-bin-trash-bold" width={20} />
+                          </IconButton>
+                        </Tooltip>
+                      </Stack>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -336,13 +381,10 @@ export function InstituteConfigureView() {
         </Scrollbar>
       </Card>
 
-      {/* Associate Teacher Dialog */}
+      {/* ── Associate Teacher Dialog ── */}
       <Dialog
         open={openAssociateModal}
-        onClose={() => {
-          setOpenAssociateModal(false);
-          setErrorMsg('');
-        }}
+        onClose={() => { setOpenAssociateModal(false); setErrorMsg(''); }}
         maxWidth="sm"
         fullWidth
       >
@@ -370,7 +412,6 @@ export function InstituteConfigureView() {
                     ? `Matching account found: "${name}". Subjects will be linked.`
                     : 'System will auto-create password & invite them if new user.'
                 }
-                error={false}
               />
 
               <TextField
@@ -383,22 +424,24 @@ export function InstituteConfigureView() {
                 helperText={userExists ? 'Existing accounts cannot change name here.' : ''}
               />
 
+              <TextField
+                fullWidth
+                label="Phone Number"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                disabled={userExists || checkingEmail}
+                helperText={userExists ? 'Phone can be edited via the Edit button.' : ''}
+              />
+
               <FormControl fullWidth required>
-                <InputLabel id="subjects-select-label">Subjects</InputLabel>
+                <InputLabel id="assoc-subjects-label">Subjects</InputLabel>
                 <Select
-                  labelId="subjects-select-label"
+                  labelId="assoc-subjects-label"
                   multiple
                   value={selectedSubjects}
                   onChange={(e) => setSelectedSubjects(e.target.value as number[])}
                   input={<OutlinedInput label="Subjects" />}
-                  renderValue={(selected) => (
-                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                      {selected.map((value) => {
-                        const subject = allSubjects.find((s) => s.id === value);
-                        return <Chip key={value} label={subject ? subject.name : value} size="small" />;
-                      })}
-                    </Box>
-                  )}
+                  renderValue={renderSubjectChips}
                 >
                   {allSubjects.map((sub) => (
                     <MenuItem key={sub.id} value={sub.id}>
@@ -411,13 +454,7 @@ export function InstituteConfigureView() {
             </Stack>
           </DialogContent>
           <DialogActions>
-            <Button
-              onClick={() => {
-                setOpenAssociateModal(false);
-                setErrorMsg('');
-              }}
-              color="inherit"
-            >
+            <Button onClick={() => { setOpenAssociateModal(false); setErrorMsg(''); }} color="inherit">
               Cancel
             </Button>
             <Button
@@ -427,6 +464,73 @@ export function InstituteConfigureView() {
               disabled={submitLoading || checkingEmail || !email || selectedSubjects.length === 0}
             >
               {submitLoading ? 'Associating...' : 'Associate'}
+            </Button>
+          </DialogActions>
+        </Box>
+      </Dialog>
+
+      {/* ── Edit Teacher Dialog ── */}
+      <Dialog
+        open={openEditModal}
+        onClose={() => { setOpenEditModal(false); setErrorMsg(''); }}
+        maxWidth="sm"
+        fullWidth
+      >
+        <Box component="form" onSubmit={handleEditSubmit}>
+          <DialogTitle>Edit Teacher — {editTeacher?.email}</DialogTitle>
+          <DialogContent dividers>
+            {!!errorMsg && (
+              <Alert severity="error" sx={{ mb: 2 }} onClose={() => setErrorMsg('')}>
+                {errorMsg}
+              </Alert>
+            )}
+            <Stack spacing={3} sx={{ mt: 1 }}>
+              <TextField
+                fullWidth
+                label="Teacher Name"
+                value={editName}
+                onChange={(e) => setEditName(e.target.value)}
+                required
+              />
+
+              <TextField
+                fullWidth
+                label="Phone Number"
+                value={editPhone}
+                onChange={(e) => setEditPhone(e.target.value)}
+              />
+
+              <FormControl fullWidth required>
+                <InputLabel id="edit-subjects-label">Subjects</InputLabel>
+                <Select
+                  labelId="edit-subjects-label"
+                  multiple
+                  value={editSubjects}
+                  onChange={(e) => setEditSubjects(e.target.value as number[])}
+                  input={<OutlinedInput label="Subjects" />}
+                  renderValue={renderSubjectChips}
+                >
+                  {allSubjects.map((sub) => (
+                    <MenuItem key={sub.id} value={sub.id}>
+                      <Checkbox checked={editSubjects.indexOf(sub.id) > -1} />
+                      <ListItemText primary={`${sub.name} (${sub.code})`} />
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Stack>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => { setOpenEditModal(false); setErrorMsg(''); }} color="inherit">
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              variant="contained"
+              color="primary"
+              disabled={submitLoading || !editName || editSubjects.length === 0}
+            >
+              {submitLoading ? 'Saving...' : 'Save Changes'}
             </Button>
           </DialogActions>
         </Box>
