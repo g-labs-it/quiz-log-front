@@ -32,6 +32,12 @@ export const navData = [
     permission: 'view_role_management',
   },
   {
+    title: 'Institutes',
+    path: '/institutes',
+    icon: icon('ic-business'),
+    permission: 'institue_management',
+  },
+  {
     title: 'Settings',
     path: '/settings',
     icon: icon('ic-setting'),

@@ -24,6 +24,8 @@ export const ProfilePage = lazy(() => import('src/pages/profile'));
 export const ProductsPage = lazy(() => import('src/pages/products'));
 export const SettingsPage = lazy(() => import('src/pages/settings'));
 export const RolesPage = lazy(() => import('src/pages/roles'));
+// Lazy loaded InstitutesPage
+export const InstitutesPage = lazy(() => import('src/pages/institutes'));
 export const Page404 = lazy(() => import('src/pages/page-not-found'));
 
 const renderFallback = () => (
@@ -90,6 +92,14 @@ export const routesSection: RouteObject[] = [
         element: (
           <RoleBasedGuard permissions={['view_role_management']}>
             <RolesPage />
+          </RoleBasedGuard>
+        ),
+      },
+      {
+        path: 'institutes',
+        element: (
+          <RoleBasedGuard permissions={['view_institue_management']}>
+            <InstitutesPage />
           </RoleBasedGuard>
         ),
       },
