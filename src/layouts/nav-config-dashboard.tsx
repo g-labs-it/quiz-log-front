@@ -38,6 +38,12 @@ export const navData = [
     permission: 'institue_management',
   },
   {
+    title: 'Classes',
+    path: '/classes',
+    icon: icon('ic-course'),
+    permission: 'class_management',
+  },
+  {
     title: 'Settings',
     path: '/settings',
     icon: icon('ic-setting'),

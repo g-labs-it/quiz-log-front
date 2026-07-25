@@ -1,3 +1,5 @@
+import path from 'path';
+
 import globals from 'globals';
 import eslintJs from '@eslint/js';
 import eslintTs from 'typescript-eslint';
@@ -164,7 +166,7 @@ export const customConfig = {
     'import/resolver': {
       ...importPlugin.configs.typescript.settings['import/resolver'],
       typescript: {
-        project: './tsconfig.json',
+        project: path.resolve(import.meta.dirname, './tsconfig.json'),
       },
     },
   },

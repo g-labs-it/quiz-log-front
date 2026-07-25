@@ -150,7 +150,7 @@ export function NavContent({ data, slots, workspaces, sx, siteName = 'G Labs' }:
             }}
           >
             {data.map((item) => {
-              const isActived = item.path === pathname;
+              const isActived = item.path === '/' ? pathname === '/' : pathname.startsWith(item.path);
 
               return (
                 <ListItem disableGutters disablePadding key={item.title}>

@@ -26,6 +26,10 @@ export const SettingsPage = lazy(() => import('src/pages/settings'));
 export const RolesPage = lazy(() => import('src/pages/roles'));
 // Lazy loaded InstitutesPage
 export const InstitutesPage = lazy(() => import('src/pages/institutes'));
+export const InstituteCreatePage = lazy(() => import('src/pages/institute-create'));
+export const InstituteEditPage = lazy(() => import('src/pages/institute-edit'));
+export const InstituteConfigurePage = lazy(() => import('src/pages/institute-configure'));
+export const ClassesPage = lazy(() => import('src/pages/classes'));
 export const Page404 = lazy(() => import('src/pages/page-not-found'));
 
 const renderFallback = () => (
@@ -100,6 +104,38 @@ export const routesSection: RouteObject[] = [
         element: (
           <RoleBasedGuard permissions={['view_institue_management']}>
             <InstitutesPage />
+          </RoleBasedGuard>
+        ),
+      },
+      {
+        path: 'institutes/create',
+        element: (
+          <RoleBasedGuard permissions={['create_institue_management']}>
+            <InstituteCreatePage />
+          </RoleBasedGuard>
+        ),
+      },
+      {
+        path: 'institutes/:id/edit',
+        element: (
+          <RoleBasedGuard permissions={['update_institue_management']}>
+            <InstituteEditPage />
+          </RoleBasedGuard>
+        ),
+      },
+      {
+        path: 'institutes/:id/configure',
+        element: (
+          <RoleBasedGuard permissions={['configure_institue_management']}>
+            <InstituteConfigurePage />
+          </RoleBasedGuard>
+        ),
+      },
+      {
+        path: 'classes',
+        element: (
+          <RoleBasedGuard permissions={['view_class_management']}>
+            <ClassesPage />
           </RoleBasedGuard>
         ),
       },

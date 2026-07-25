@@ -11,6 +11,8 @@ export type UserType = {
   created_by?: number | null;
   updated_by?: number | null;
   needs_password_change?: boolean;
+  institutes?: any[];
+  owned_institutes?: any[];
 };
 
 export type AuthStateType = {
