@@ -57,12 +57,27 @@ export function DashboardLayout({
 
   const filteredNavData = useMemo(() => {
     if (!user) return [];
-    return navData.filter((item) => {
-      if (item.permission) {
-        return user.all_permissions?.includes(item.permission);
-      }
-      return true;
-    });
+    return navData
+      .filter((item) => {
+        if (item.permission) {
+          return user.all_permissions?.includes(item.permission);
+        }
+        return true;
+      })
+      .map((item) => {
+        if ('children' in item && Array.isArray(item.children)) {
+          return {
+            ...item,
+            children: item.children.filter((child) => {
+              if (child.permission) {
+                return user.all_permissions?.includes(child.permission);
+              }
+              return true;
+            }),
+          };
+        }
+        return item;
+      });
   }, [user]);
 
   const [navColor, setNavColor] = useState(() => {

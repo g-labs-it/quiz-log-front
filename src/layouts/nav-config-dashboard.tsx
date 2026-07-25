@@ -10,6 +10,11 @@ export type NavItem = {
   icon: React.ReactNode;
   info?: React.ReactNode;
   permission?: string;
+  children?: {
+    title: string;
+    path: string;
+    permission?: string;
+  }[];
 };
 
 export const navData = [
@@ -38,10 +43,17 @@ export const navData = [
     permission: 'institue_management',
   },
   {
-    title: 'Classes',
-    path: '/classes',
-    icon: icon('ic-course'),
-    permission: 'class_management',
+    title: 'Master Data',
+    path: '/master-data',
+    icon: icon('ic-analytics'),
+    permission: 'masterdata_management',
+    children: [
+      {
+        title: 'Subjects',
+        path: '/subjects',
+        permission: 'view_masterdata_management',
+      },
+    ],
   },
   {
     title: 'Settings',

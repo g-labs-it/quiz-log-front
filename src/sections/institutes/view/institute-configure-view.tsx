@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
+import Chip from '@mui/material/Chip';
 import Table from '@mui/material/Table';
 import Stack from '@mui/material/Stack';
 import Alert from '@mui/material/Alert';
@@ -12,14 +13,18 @@ import Select from '@mui/material/Select';
 import Tooltip from '@mui/material/Tooltip';
 import TableRow from '@mui/material/TableRow';
 import MenuItem from '@mui/material/MenuItem';
+import Checkbox from '@mui/material/Checkbox';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
 import TableHead from '@mui/material/TableHead';
+import TextField from '@mui/material/TextField';
 import InputLabel from '@mui/material/InputLabel';
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
 import FormControl from '@mui/material/FormControl';
 import DialogTitle from '@mui/material/DialogTitle';
+import ListItemText from '@mui/material/ListItemText';
+import OutlinedInput from '@mui/material/OutlinedInput';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import TableContainer from '@mui/material/TableContainer';
@@ -37,6 +42,11 @@ export interface TeacherProps {
   name: string;
   email: string;
   phone?: string;
+  subjects?: {
+    id: number;
+    name: string;
+    code: string;
+  }[];
 }
 
 export function InstituteConfigureView() {
@@ -45,7 +55,7 @@ export function InstituteConfigureView() {
 
   const [instituteName, setInstituteName] = useState('');
   const [teachers, setTeachers] = useState<TeacherProps[]>([]);
-  const [allUsers, setAllUsers] = useState<any[]>([]);
+  const [allSubjects, setAllSubjects] = useState<any[]>([]);
   
   const [loading, setLoading] = useState(true);
   const [submitLoading, setSubmitLoading] = useState(false);
@@ -53,7 +63,13 @@ export function InstituteConfigureView() {
   const [successMsg, setSuccessMsg] = useState('');
 
   const [openAssociateModal, setOpenAssociateModal] = useState(false);
-  const [selectedUserId, setSelectedUserId] = useState<string | number>('');
+  
+  // Associate Form States
+  const [email, setEmail] = useState('');
+  const [name, setName] = useState('');
+  const [selectedSubjects, setSelectedSubjects] = useState<number[]>([]);
+  const [checkingEmail, setCheckingEmail] = useState(false);
+  const [userExists, setUserExists] = useState(false);
 
   const fetchInstituteDetails = useCallback(async () => {
     try {
@@ -82,44 +98,82 @@ export function InstituteConfigureView() {
     }
   }, [id]);
 
-  const fetchAllUsers = useCallback(async () => {
+  const fetchAllSubjects = useCallback(async () => {
     try {
-      const response = await axiosInstance.get('/users', {
+      const response = await axiosInstance.get('/subjects', {
         params: { per_page: 200 }
       });
       if (response.data && response.data.data) {
-        const usersList = response.data.data.data || response.data.data || [];
-        setAllUsers(usersList);
+        const subjectsList = response.data.data.data || response.data.data || [];
+        setAllSubjects(subjectsList);
       }
     } catch (err) {
-      console.error('Failed to fetch users list', err);
+      console.error('Failed to fetch subjects list', err);
     }
   }, []);
 
   useEffect(() => {
     fetchInstituteDetails();
     fetchAssociatedTeachers();
-    fetchAllUsers();
-  }, [fetchInstituteDetails, fetchAssociatedTeachers, fetchAllUsers]);
+    fetchAllSubjects();
+  }, [fetchInstituteDetails, fetchAssociatedTeachers, fetchAllSubjects]);
+
+  const handleEmailBlur = async () => {
+    if (!email || !email.includes('@')) return;
+    setCheckingEmail(true);
+    try {
+      const response = await axiosInstance.get('/users', {
+        params: { search: email },
+      });
+      const usersList = response.data?.data?.data || response.data?.data || [];
+      const exactMatch = usersList.find((u: any) => u.email.toLowerCase() === email.toLowerCase());
+      if (exactMatch) {
+        setUserExists(true);
+        setName(exactMatch.name);
+      } else {
+        setUserExists(false);
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setCheckingEmail(false);
+    }
+  };
+
+  const handleOpenAssociate = () => {
+    setEmail('');
+    setName('');
+    setSelectedSubjects([]);
+    setUserExists(false);
+    setErrorMsg('');
+    setSuccessMsg('');
+    setOpenAssociateModal(true);
+  };
 
   const handleAssociate = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedUserId) return;
+    if (!email || selectedSubjects.length === 0) return;
     setSubmitLoading(true);
     setErrorMsg('');
     setSuccessMsg('');
 
     try {
       await axiosInstance.post(`/institutes/${id}/teachers`, {
-        user_id: selectedUserId,
+        email,
+        name: userExists ? undefined : name,
+        subjects: selectedSubjects,
       });
-      setSuccessMsg('Teacher associated successfully!');
+      setSuccessMsg(userExists ? 'Teacher associated successfully!' : 'Teacher account created and associated successfully!');
       setOpenAssociateModal(false);
-      setSelectedUserId('');
       fetchAssociatedTeachers();
     } catch (err: any) {
       console.error(err);
-      setErrorMsg(err.message || 'Failed to associate teacher');
+      if (err.errors) {
+        const firstError = Object.values(err.errors)[0] as string[];
+        setErrorMsg(firstError[0] || 'Failed to associate teacher');
+      } else {
+        setErrorMsg(err.message || 'Failed to associate teacher');
+      }
     } finally {
       setSubmitLoading(false);
     }
@@ -162,7 +216,7 @@ export function InstituteConfigureView() {
             variant="contained"
             color="inherit"
             startIcon={<Iconify icon="mingcute:add-line" />}
-            onClick={() => setOpenAssociateModal(true)}
+            onClick={handleOpenAssociate}
           >
             Associate Teacher
           </Button>
@@ -217,6 +271,7 @@ export function InstituteConfigureView() {
                   <TableCell>Name</TableCell>
                   <TableCell>Email</TableCell>
                   <TableCell>Phone</TableCell>
+                  <TableCell>Subjects</TableCell>
                   <TableCell align="right">Actions</TableCell>
                 </TableRow>
               </TableHead>
@@ -226,6 +281,23 @@ export function InstituteConfigureView() {
                     <TableCell sx={{ fontWeight: 'medium' }}>{row.name}</TableCell>
                     <TableCell>{row.email}</TableCell>
                     <TableCell>{row.phone || '-'}</TableCell>
+                    <TableCell>
+                      {row.subjects && row.subjects.length > 0 ? (
+                        <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
+                          {row.subjects.map((sub) => (
+                            <Chip
+                              key={sub.id}
+                              label={`${sub.name} (${sub.code})`}
+                              size="small"
+                              variant="outlined"
+                              color="primary"
+                            />
+                          ))}
+                        </Box>
+                      ) : (
+                        '-'
+                      )}
+                    </TableCell>
                     <TableCell align="right">
                       <Tooltip title="Remove Association">
                         <IconButton
@@ -251,7 +323,7 @@ export function InstituteConfigureView() {
 
                 {!loading && teachers.length === 0 && (
                   <TableRow>
-                    <TableCell colSpan={4} align="center" sx={{ py: 5 }}>
+                    <TableCell colSpan={5} align="center" sx={{ py: 5 }}>
                       <Typography variant="body2" color="text.secondary">
                         No teachers associated with this institute yet.
                       </Typography>
@@ -271,7 +343,7 @@ export function InstituteConfigureView() {
           setOpenAssociateModal(false);
           setErrorMsg('');
         }}
-        maxWidth="xs"
+        maxWidth="sm"
         fullWidth
       >
         <Box component="form" onSubmit={handleAssociate}>
@@ -283,20 +355,55 @@ export function InstituteConfigureView() {
               </Alert>
             )}
             <Stack spacing={3} sx={{ mt: 1 }}>
+              <TextField
+                fullWidth
+                label="Email Address"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                onBlur={handleEmailBlur}
+                required
+                type="email"
+                helperText={
+                  checkingEmail
+                    ? 'Checking system...'
+                    : userExists
+                    ? `Matching account found: "${name}". Subjects will be linked.`
+                    : 'System will auto-create password & invite them if new user.'
+                }
+                error={false}
+              />
+
+              <TextField
+                fullWidth
+                label="Teacher Name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                required={!userExists}
+                disabled={userExists || checkingEmail}
+                helperText={userExists ? 'Existing accounts cannot change name here.' : ''}
+              />
+
               <FormControl fullWidth required>
-                <InputLabel id="teacher-user-label">Select User</InputLabel>
+                <InputLabel id="subjects-select-label">Subjects</InputLabel>
                 <Select
-                  labelId="teacher-user-label"
-                  value={selectedUserId}
-                  onChange={(e) => setSelectedUserId(e.target.value)}
-                  label="Select User"
+                  labelId="subjects-select-label"
+                  multiple
+                  value={selectedSubjects}
+                  onChange={(e) => setSelectedSubjects(e.target.value as number[])}
+                  input={<OutlinedInput label="Subjects" />}
+                  renderValue={(selected) => (
+                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                      {selected.map((value) => {
+                        const subject = allSubjects.find((s) => s.id === value);
+                        return <Chip key={value} label={subject ? subject.name : value} size="small" />;
+                      })}
+                    </Box>
+                  )}
                 >
-                  <MenuItem value="">
-                    <em>Select a user...</em>
-                  </MenuItem>
-                  {allUsers.map((user) => (
-                    <MenuItem key={user.id} value={user.id}>
-                      {user.name} ({user.email})
+                  {allSubjects.map((sub) => (
+                    <MenuItem key={sub.id} value={sub.id}>
+                      <Checkbox checked={selectedSubjects.indexOf(sub.id) > -1} />
+                      <ListItemText primary={`${sub.name} (${sub.code})`} />
                     </MenuItem>
                   ))}
                 </Select>
@@ -313,7 +420,12 @@ export function InstituteConfigureView() {
             >
               Cancel
             </Button>
-            <Button type="submit" variant="contained" color="primary" disabled={submitLoading || !selectedUserId}>
+            <Button
+              type="submit"
+              variant="contained"
+              color="primary"
+              disabled={submitLoading || checkingEmail || !email || selectedSubjects.length === 0}
+            >
               {submitLoading ? 'Associating...' : 'Associate'}
             </Button>
           </DialogActions>
