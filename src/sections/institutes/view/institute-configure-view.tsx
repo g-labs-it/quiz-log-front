@@ -78,6 +78,10 @@ export function InstituteConfigureView() {
   const [editPhone, setEditPhone] = useState('');
   const [editSubjects, setEditSubjects] = useState<SubjectOption[]>([]);
 
+  // ── Delete Confirmation Modal ──
+  const [openDeleteModal, setOpenDeleteModal] = useState(false);
+  const [teacherToDelete, setTeacherToDelete] = useState<{ id: number; name: string } | null>(null);
+
   const fetchInstituteDetails = useCallback(async () => {
     try {
       const response = await axiosInstance.get(`/institutes/${id}`);
@@ -213,18 +217,26 @@ export function InstituteConfigureView() {
   };
 
   // ─── Remove handler ──────────────────────────────────────────
-  const handleRemoveTeacher = async (userId: number, userName: string) => {
-    if (!window.confirm(`Are you sure you want to remove teacher ${userName}?`)) return;
+  const handleOpenDeleteModal = (userId: number, userName: string) => {
+    setTeacherToDelete({ id: userId, name: userName });
+    setOpenDeleteModal(true);
+  };
+
+  const handleConfirmDeleteTeacher = async () => {
+    if (!teacherToDelete) return;
+    setOpenDeleteModal(false);
     setLoading(true);
     setErrorMsg('');
 
     try {
-      await axiosInstance.delete(`/institutes/${id}/teachers/${userId}`);
+      await axiosInstance.delete(`/institutes/${id}/teachers/${teacherToDelete.id}`);
       setSuccessMsg('Teacher removed successfully!');
       fetchAssociatedTeachers();
     } catch (err: any) {
       setErrorMsg(err.message || 'Failed to remove teacher');
       setLoading(false);
+    } finally {
+      setTeacherToDelete(null);
     }
   };
 
@@ -341,7 +353,7 @@ export function InstituteConfigureView() {
                         </Tooltip>
                         <Tooltip title="Remove Association">
                           <IconButton
-                            onClick={() => handleRemoveTeacher(row.id, row.name)}
+                            onClick={() => handleOpenDeleteModal(row.id, row.name)}
                             sx={{
                               width: 36,
                               height: 36,
@@ -549,6 +561,34 @@ export function InstituteConfigureView() {
             </Button>
           </DialogActions>
         </Box>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog
+        open={openDeleteModal}
+        onClose={() => setOpenDeleteModal(false)}
+        maxWidth="xs"
+        fullWidth
+      >
+        <DialogTitle sx={{ pb: 1 }}>Remove Teacher Association</DialogTitle>
+        <DialogContent>
+          <Typography variant="body2" color="text.secondary">
+            Are you sure you want to remove teacher <strong>{teacherToDelete?.name}</strong> from this institute?
+          </Typography>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2.5 }}>
+          <Button onClick={() => setOpenDeleteModal(false)} color="inherit">
+            Cancel
+          </Button>
+          <Button
+            onClick={handleConfirmDeleteTeacher}
+            variant="contained"
+            color="error"
+            autoFocus
+          >
+            Remove
+          </Button>
+        </DialogActions>
       </Dialog>
     </DashboardContent>
   );
