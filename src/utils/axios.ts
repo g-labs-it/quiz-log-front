@@ -27,7 +27,11 @@ axiosInstance.interceptors.response.use(
     if (error.response && error.response.status === 401) {
       localStorage.removeItem('accessToken');
       if (typeof window !== 'undefined') {
-        window.location.href = '/sign-in';
+        const isLoginRequest = error.config?.url?.includes('/auth/login');
+        const isSignInPage = window.location.pathname === '/sign-in';
+        if (!isLoginRequest && !isSignInPage) {
+          window.location.href = '/sign-in';
+        }
       }
     }
     return Promise.reject((error.response && error.response.data) || 'Something went wrong');

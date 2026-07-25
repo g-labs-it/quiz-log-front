@@ -40,7 +40,22 @@ export function SignInView() {
         router.push('/');
       } catch (err: any) {
         console.error(err);
-        setErrorMsg(err.message || 'Invalid email or password');
+        let message = 'Invalid email or password';
+        if (err && typeof err === 'object') {
+          if (typeof err.errors === 'string') {
+            message = err.errors;
+          } else if (err.errors && typeof err.errors === 'object') {
+            const firstError = Object.values(err.errors)[0];
+            if (Array.isArray(firstError)) {
+              message = firstError[0];
+            } else if (typeof firstError === 'string') {
+              message = firstError;
+            }
+          } else if (err.message) {
+            message = err.message;
+          }
+        }
+        setErrorMsg(message);
       } finally {
         setIsSubmitting(false);
       }

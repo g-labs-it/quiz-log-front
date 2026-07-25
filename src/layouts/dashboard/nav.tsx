@@ -27,6 +27,7 @@ export type NavContentProps = {
   };
   workspaces?: any[];
   sx?: SxProps<Theme>;
+  siteName?: string;
 };
 
 export function NavDesktop({
@@ -35,6 +36,7 @@ export function NavDesktop({
   slots,
   workspaces,
   layoutQuery,
+  siteName,
 }: NavContentProps & { layoutQuery: Breakpoint }) {
   const theme = useTheme();
 
@@ -59,7 +61,7 @@ export function NavDesktop({
         ...sx,
       }}
     >
-      <NavContent data={data} slots={slots} workspaces={workspaces} />
+      <NavContent data={data} slots={slots} workspaces={workspaces} siteName={siteName} />
     </Box>
   );
 }
@@ -73,6 +75,7 @@ export function NavMobile({
   slots,
   onClose,
   workspaces,
+  siteName,
 }: NavContentProps & { open: boolean; onClose: () => void }) {
   const pathname = usePathname();
 
@@ -99,14 +102,14 @@ export function NavMobile({
         },
       }}
     >
-      <NavContent data={data} slots={slots} workspaces={workspaces} />
+      <NavContent data={data} slots={slots} workspaces={workspaces} siteName={siteName} />
     </Drawer>
   );
 }
 
 // ----------------------------------------------------------------------
 
-export function NavContent({ data, slots, workspaces, sx }: NavContentProps) {
+export function NavContent({ data, slots, workspaces, sx, siteName = 'G Labs' }: NavContentProps) {
   const pathname = usePathname();
 
   return (
@@ -118,9 +121,9 @@ export function NavContent({ data, slots, workspaces, sx }: NavContentProps) {
           sx={{ fontWeight: 800, color: 'common.white', letterSpacing: 0.5 }}
         >
           <Box component="span" sx={{ color: 'primary.main' }}>
-            G
-          </Box>{' '}
-          Labs
+            {siteName.charAt(0)}
+          </Box>
+          {siteName.slice(1)}
         </Typography>
       </Box>
 

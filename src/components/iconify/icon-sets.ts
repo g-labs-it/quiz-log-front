@@ -44,6 +44,9 @@ export default {
   'eva:more-vertical-fill': {
     body: '<circle cx="12" cy="12" r="2" fill="currentColor"/><circle cx="12" cy="5" r="2" fill="currentColor"/><circle cx="12" cy="19" r="2" fill="currentColor"/>',
   },
+  'eva:arrow-back-fill': {
+    body: '<path fill="currentColor" d="M19 11H7.83l4.88-4.88a1 1 0 1 0-1.42-1.42l-6.58 6.58a1 1 0 0 0-.29.71a1 1 0 0 0 .29.7l6.58 6.59a1 1 0 0 0 1.42 0a1 1 0 0 0 0-1.42L7.83 13H19a1 1 0 0 0 0-2"/>',
+  },
   'eva:search-fill': {
     body: '<path fill="currentColor" d="m20.71 19.29l-3.4-3.39A7.92 7.92 0 0 0 19 11a8 8 0 1 0-8 8a7.92 7.92 0 0 0 4.9-1.69l3.39 3.4a1 1 0 0 0 1.42 0a1 1 0 0 0 0-1.42M5 11a6 6 0 1 1 6 6a6 6 0 0 1-6-6"/>',
   },

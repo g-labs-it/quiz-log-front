@@ -10,6 +10,7 @@ export type UserType = {
   all_permissions: string[];
   created_by?: number | null;
   updated_by?: number | null;
+  needs_password_change?: boolean;
 };
 
 export type AuthStateType = {

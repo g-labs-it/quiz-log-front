@@ -114,6 +114,18 @@ export function AuthProvider({ children }: AuthProviderProps) {
   // CHANGE PASSWORD
   const changePassword = useCallback(async (data: any) => {
     await axiosInstance.put('/auth/change-password', data);
+    setState((prevState) => {
+      if (prevState.user) {
+        return {
+          ...prevState,
+          user: {
+            ...prevState.user,
+            needs_password_change: false,
+          },
+        };
+      }
+      return prevState;
+    });
   }, []);
 
   // FORGOT PASSWORD

@@ -8,8 +8,8 @@ import Box from '@mui/material/Box';
 import LinearProgress, { linearProgressClasses } from '@mui/material/LinearProgress';
 
 import { AuthLayout } from 'src/layouts/auth';
-import { AuthGuard, GuestGuard } from 'src/auth';
 import { DashboardLayout } from 'src/layouts/dashboard';
+import { AuthGuard, GuestGuard, RoleBasedGuard } from 'src/auth';
 
 // ----------------------------------------------------------------------
 
@@ -22,6 +22,8 @@ export const ForgotPasswordPage = lazy(() => import('src/pages/forgot-password')
 export const ResetPasswordPage = lazy(() => import('src/pages/reset-password'));
 export const ProfilePage = lazy(() => import('src/pages/profile'));
 export const ProductsPage = lazy(() => import('src/pages/products'));
+export const SettingsPage = lazy(() => import('src/pages/settings'));
+export const RolesPage = lazy(() => import('src/pages/roles'));
 export const Page404 = lazy(() => import('src/pages/page-not-found'));
 
 const renderFallback = () => (
@@ -56,11 +58,41 @@ export const routesSection: RouteObject[] = [
       </AuthGuard>
     ),
     children: [
-      { index: true, element: <DashboardPage /> },
-      { path: 'user', element: <UserPage /> },
+      {
+        index: true,
+        element: (
+          <RoleBasedGuard permissions={['view_dashboard']}>
+            <DashboardPage />
+          </RoleBasedGuard>
+        ),
+      },
+      {
+        path: 'user',
+        element: (
+          <RoleBasedGuard permissions={['view_user_management']}>
+            <UserPage />
+          </RoleBasedGuard>
+        ),
+      },
       { path: 'products', element: <ProductsPage /> },
       { path: 'blog', element: <BlogPage /> },
       { path: 'profile', element: <ProfilePage /> },
+      {
+        path: 'settings',
+        element: (
+          <RoleBasedGuard permissions={['setting_management']}>
+            <SettingsPage />
+          </RoleBasedGuard>
+        ),
+      },
+      {
+        path: 'roles',
+        element: (
+          <RoleBasedGuard permissions={['view_role_management']}>
+            <RolesPage />
+          </RoleBasedGuard>
+        ),
+      },
     ],
   },
   {
