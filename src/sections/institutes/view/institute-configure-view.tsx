@@ -336,6 +336,22 @@ export function InstituteConfigureView() {
                     </TableCell>
                     <TableCell align="right">
                       <Stack direction="row" spacing={1} justifyContent="flex-end">
+                        <Tooltip title="Overview">
+                          <IconButton
+                            onClick={() => navigate(`/institutes/${id}/teachers/${row.id}/overview`)}
+                            sx={{
+                              width: 36,
+                              height: 36,
+                              borderRadius: '10px',
+                              bgcolor: '#00b37e',
+                              color: '#fff',
+                              '&:hover': { bgcolor: '#00b37e', opacity: 0.9 },
+                            }}
+                          >
+                            <Iconify icon="solar:eye-bold" width={20} />
+                          </IconButton>
+                        </Tooltip>
+
                         <Tooltip title="Edit">
                           <IconButton
                             onClick={() => handleOpenEdit(row)}
