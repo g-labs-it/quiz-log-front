@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { Link as RouterLink } from 'react-router-dom';
+import { Link as RouterLink, useSearchParams } from 'react-router-dom';
 
 import Box from '@mui/material/Box';
 import Link from '@mui/material/Link';
@@ -22,10 +22,15 @@ export function ResetPasswordView() {
   const router = useRouter();
   const { resetPassword } = useAuth();
 
+  // Read token & email injected by the email reset link
+  const [searchParams] = useSearchParams();
+  const tokenFromUrl = searchParams.get('token') ?? '';
+  const emailFromUrl = searchParams.get('email') ?? '';
+
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
-    email: '',
-    token: '',
+    email: emailFromUrl,
+    token: tokenFromUrl,
     password: '',
     password_confirmation: '',
   });
@@ -49,6 +54,12 @@ export function ResetPasswordView() {
       setErrorMsg('');
       setSuccessMsg('');
 
+      if (formData.password.length < 8) {
+        setErrorMsg('Password must be at least 8 characters long.');
+        setIsSubmitting(false);
+        return;
+      }
+
       if (formData.password !== formData.password_confirmation) {
         setErrorMsg('Passwords do not match');
         setIsSubmitting(false);
@@ -63,9 +74,16 @@ export function ResetPasswordView() {
         }, 3000);
       } catch (err: any) {
         console.error(err);
-        setErrorMsg(
-          err.message || 'Failed to reset password. Please check your token and credentials.'
-        );
+
+        // Laravel validation errors come as { errors: { field: [msg, ...] } }
+        if (err?.errors && typeof err.errors === 'object') {
+          const messages = Object.values(err.errors as Record<string, string[]>)
+            .flat()
+            .join(' ');
+          setErrorMsg(messages || 'Validation failed. Please check your input.');
+        } else {
+          setErrorMsg(err?.message || 'Failed to reset password. The link may have expired.');
+        }
       } finally {
         setIsSubmitting(false);
       }
@@ -95,28 +113,9 @@ export function ResetPasswordView() {
         </Alert>
       )}
 
-      <TextField
-        fullWidth
-        name="email"
-        label="Email address"
-        type="email"
-        value={formData.email}
-        onChange={handleChange}
-        required
-        sx={{ mb: 2 }}
-        slotProps={{ inputLabel: { shrink: true } }}
-      />
-
-      <TextField
-        fullWidth
-        name="token"
-        label="Reset Token"
-        value={formData.token}
-        onChange={handleChange}
-        required
-        sx={{ mb: 2 }}
-        slotProps={{ inputLabel: { shrink: true } }}
-      />
+      {/* Token & email are taken from URL params — kept in state but not shown */}
+      <input type="hidden" name="email" value={formData.email} />
+      <input type="hidden" name="token" value={formData.token} />
 
       <TextField
         fullWidth
@@ -185,7 +184,7 @@ export function ResetPasswordView() {
             textAlign: 'center',
           }}
         >
-          Enter the token received in your email along with your new password.
+          Enter your new password below.
         </Typography>
       </Box>
 
