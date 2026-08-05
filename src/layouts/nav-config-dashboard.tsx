@@ -44,6 +44,12 @@ export const navData = [
     permission: 'class_management',
   },
   {
+    title: 'Quizzes',
+    path: '/quizzes',
+    icon: icon('ic-blog'),
+    permission: 'quiz_management',
+  },
+  {
     title: 'Institutes',
     path: '/institutes',
     icon: icon('ic-business'),

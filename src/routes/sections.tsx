@@ -33,6 +33,10 @@ export const InstituteOverviewPage = lazy(() => import('src/pages/institute-over
 export const TeacherOverviewPage = lazy(() => import('src/pages/teacher-overview'));
 export const ClassesPage = lazy(() => import('src/pages/classes'));
 export const SubjectsPage = lazy(() => import('src/pages/subjects'));
+export const QuizzesPage = lazy(() => import('src/pages/quizzes'));
+export const QuizCreatePage = lazy(() => import('src/pages/quiz-create'));
+export const QuizEditPage = lazy(() => import('src/pages/quiz-edit'));
+export const QuizOverviewPage = lazy(() => import('src/pages/quiz-overview'));
 export const Page404 = lazy(() => import('src/pages/page-not-found'));
 
 const renderFallback = () => (
@@ -163,6 +167,38 @@ export const routesSection: RouteObject[] = [
         element: (
           <RoleBasedGuard permissions={['view_masterdata_management']}>
             <SubjectsPage />
+          </RoleBasedGuard>
+        ),
+      },
+      {
+        path: 'quizzes',
+        element: (
+          <RoleBasedGuard permissions={['view_quiz_management']}>
+            <QuizzesPage />
+          </RoleBasedGuard>
+        ),
+      },
+      {
+        path: 'quizzes/create',
+        element: (
+          <RoleBasedGuard permissions={['create_quiz_management']}>
+            <QuizCreatePage />
+          </RoleBasedGuard>
+        ),
+      },
+      {
+        path: 'quizzes/:id/edit',
+        element: (
+          <RoleBasedGuard permissions={['update_quiz_management']}>
+            <QuizEditPage />
+          </RoleBasedGuard>
+        ),
+      },
+      {
+        path: 'quizzes/:id/overview',
+        element: (
+          <RoleBasedGuard permissions={['view_quiz_management']}>
+            <QuizOverviewPage />
           </RoleBasedGuard>
         ),
       },

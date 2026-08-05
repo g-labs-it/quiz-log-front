@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom';
 import { useState, useEffect, useCallback } from 'react';
 
 import Box from '@mui/material/Box';
@@ -69,6 +70,7 @@ interface TeacherOption {
 // ----------------------------------------------------------------------
 
 export function ClassesView() {
+  const navigate = useNavigate();
   const { user } = useAuth();
 
   // Role helpers — using role names to determine view hierarchy
@@ -81,6 +83,7 @@ export function ClassesView() {
   const canCreate = user?.all_permissions?.includes('create_class_management');
   const canEdit = user?.all_permissions?.includes('update_class_management');
   const canDelete = user?.all_permissions?.includes('delete_class_management');
+  const canCreateQuiz = user?.all_permissions?.includes('create_quiz_management');
 
   // List state
   const [classes, setClasses] = useState<ClassProps[]>([]);
@@ -359,6 +362,23 @@ export function ClassesView() {
                     </TableCell>
                     <TableCell align="right">
                       <Stack direction="row" spacing={1} justifyContent="flex-end">
+                        {canCreateQuiz && (
+                          <Tooltip title="Create Quiz for this Class">
+                            <IconButton
+                              onClick={() => navigate(`/quizzes/create?class_id=${row.id}`)}
+                              sx={{
+                                width: 36,
+                                height: 36,
+                                borderRadius: '10px',
+                                bgcolor: '#00a76f',
+                                color: '#fff',
+                                '&:hover': { bgcolor: '#00a76f', opacity: 0.9 },
+                              }}
+                            >
+                              <Iconify icon="mingcute:add-line" width={20} />
+                            </IconButton>
+                          </Tooltip>
+                        )}
                         {canEdit && (
                           <Tooltip title="Edit">
                             <IconButton
