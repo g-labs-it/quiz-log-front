@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useRef, useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 
 import Box from '@mui/material/Box';
@@ -34,6 +34,7 @@ type OptionType = {
   id?: number;
   option_text: string;
   is_correct: boolean;
+  option_image?: File | string | null;
 };
 
 type QuestionType = {
@@ -41,8 +42,187 @@ type QuestionType = {
   question_text: string;
   explanation: string;
   marks: number;
+  question_image?: File | string | null;
   options: OptionType[];
 };
+
+// ----------------------------------------------------------------------
+// Small reusable image upload zone
+// ----------------------------------------------------------------------
+
+type ImageUploaderProps = {
+  label: string;
+  value: File | string | null | undefined;
+  onChange: (file: File | null) => void;
+  onRemove: () => void;
+  compact?: boolean;
+  apiBaseUrl?: string;
+};
+
+function ImageUploader({ label, value, onChange, onRemove, compact = false, apiBaseUrl = '' }: ImageUploaderProps) {
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const previewSrc =
+    value instanceof File
+      ? URL.createObjectURL(value)
+      : value
+        ? `${apiBaseUrl}/storage/${value}`
+        : null;
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) onChange(file);
+    // reset input so the same file can be reselected after removal
+    e.target.value = '';
+  };
+
+  if (compact) {
+    // Inline compact uploader for options
+    return (
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, flexShrink: 0 }}>
+        <input
+          ref={inputRef}
+          type="file"
+          accept="image/*"
+          style={{ display: 'none' }}
+          onChange={handleFileChange}
+        />
+        {previewSrc ? (
+          <Box sx={{ position: 'relative', flexShrink: 0 }}>
+            <Box
+              component="img"
+              src={previewSrc}
+              alt="option"
+              sx={{ width: 40, height: 40, borderRadius: 1, objectFit: 'cover', border: '1px solid', borderColor: 'divider' }}
+            />
+            <IconButton
+              size="small"
+              onClick={onRemove}
+              sx={{
+                position: 'absolute',
+                top: -6,
+                right: -6,
+                width: 16,
+                height: 16,
+                bgcolor: 'error.main',
+                color: 'white',
+                p: 0,
+                '&:hover': { bgcolor: 'error.dark' },
+              }}
+            >
+              <Iconify icon="mingcute:close-line" width={10} />
+            </IconButton>
+          </Box>
+        ) : (
+          <Tooltip title={label}>
+            <IconButton
+              size="small"
+              onClick={() => inputRef.current?.click()}
+              sx={{
+                width: 40,
+                height: 40,
+                borderRadius: 1,
+                border: '1.5px dashed',
+                borderColor: 'divider',
+                color: 'text.secondary',
+                '&:hover': { borderColor: 'success.main', color: 'success.main' },
+              }}
+            >
+              <Iconify icon="solar:camera-add-bold" width={18} />
+            </IconButton>
+          </Tooltip>
+        )}
+      </Box>
+    );
+  }
+
+  // Full uploader for quiz cover & question images
+  return (
+    <Box>
+      <input
+        ref={inputRef}
+        type="file"
+        accept="image/*"
+        style={{ display: 'none' }}
+        onChange={handleFileChange}
+      />
+      {previewSrc ? (
+        <Box sx={{ position: 'relative' }}>
+          <Box
+            component="img"
+            src={previewSrc}
+            alt={label}
+            sx={{
+              width: '100%',
+              height: compact ? 80 : 160,
+              objectFit: 'cover',
+              borderRadius: 1.5,
+              border: '1px solid',
+              borderColor: 'divider',
+              display: 'block',
+            }}
+          />
+          <Stack
+            direction="row"
+            spacing={1}
+            sx={{ position: 'absolute', bottom: 8, right: 8 }}
+          >
+            <Button
+              size="small"
+              variant="contained"
+              color="inherit"
+              startIcon={<Iconify icon="solar:pen-bold" width={14} />}
+              onClick={() => inputRef.current?.click()}
+              sx={{ py: 0.5, px: 1.5, fontSize: 12 }}
+            >
+              Change
+            </Button>
+            <Button
+              size="small"
+              variant="contained"
+              color="error"
+              startIcon={<Iconify icon="solar:trash-bin-trash-bold" width={14} />}
+              onClick={onRemove}
+              sx={{ py: 0.5, px: 1.5, fontSize: 12 }}
+            >
+              Remove
+            </Button>
+          </Stack>
+        </Box>
+      ) : (
+        <Box
+          onClick={() => inputRef.current?.click()}
+          sx={{
+            width: '100%',
+            height: 100,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 0.75,
+            border: '2px dashed',
+            borderColor: 'divider',
+            borderRadius: 1.5,
+            cursor: 'pointer',
+            color: 'text.secondary',
+            transition: 'all 0.2s',
+            '&:hover': {
+              borderColor: 'success.main',
+              color: 'success.main',
+              bgcolor: 'rgba(0, 167, 111, 0.04)',
+            },
+          }}
+        >
+          <Iconify icon="solar:camera-add-bold" width={28} />
+          <Typography variant="caption" fontWeight={600}>{label}</Typography>
+          <Typography variant="caption" sx={{ opacity: 0.6 }}>JPG, PNG, WEBP — max 4MB</Typography>
+        </Box>
+      )}
+    </Box>
+  );
+}
+
+// ----------------------------------------------------------------------
 
 export function QuizCreateEditView() {
   const navigate = useNavigate();
@@ -60,6 +240,8 @@ export function QuizCreateEditView() {
     !userRoles.includes('Admin') &&
     !userRoles.includes('Institute Owner');
 
+  const apiBaseUrl = import.meta.env.VITE_API_URL?.replace('/api/v1', '') || 'http://localhost:8000';
+
   const [loading, setLoading] = useState(false);
   const [submitLoading, setSubmitLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
@@ -67,6 +249,9 @@ export function QuizCreateEditView() {
   // Dropdown lists
   const [classes, setClasses] = useState<any[]>([]);
   const [institutes, setInstitutes] = useState<any[]>([]);
+
+  // Quiz cover image
+  const [quizImage, setQuizImage] = useState<File | string | null>(null);
 
   // Form State
   const [quizData, setQuizData] = useState({
@@ -87,11 +272,12 @@ export function QuizCreateEditView() {
       question_text: '',
       explanation: '',
       marks: 1,
+      question_image: null,
       options: [
-        { option_text: '', is_correct: false },
-        { option_text: '', is_correct: false },
-        { option_text: '', is_correct: false },
-        { option_text: '', is_correct: false },
+        { option_text: '', is_correct: false, option_image: null },
+        { option_text: '', is_correct: false, option_image: null },
+        { option_text: '', is_correct: false, option_image: null },
+        { option_text: '', is_correct: false, option_image: null },
       ],
     },
   ]);
@@ -145,6 +331,9 @@ export function QuizCreateEditView() {
           randomize_options: Boolean(q.randomize_options),
         });
 
+        // Load existing quiz cover image path
+        if (q.image) setQuizImage(q.image);
+
         if (q.questions && q.questions.length > 0) {
           setQuestions(
             q.questions.map((quest: any) => ({
@@ -152,11 +341,13 @@ export function QuizCreateEditView() {
               question_text: quest.question_text || '',
               explanation: quest.explanation || '',
               marks: Number(quest.marks) || 1,
+              question_image: quest.question_image || null,
               options: quest.options
                 ? quest.options.map((opt: any) => ({
                     id: opt.id,
                     option_text: opt.option_text || '',
                     is_correct: Boolean(opt.is_correct),
+                    option_image: opt.option_image || null,
                   }))
                 : [],
             }))
@@ -186,11 +377,12 @@ export function QuizCreateEditView() {
         question_text: '',
         explanation: '',
         marks: 1,
+        question_image: null,
         options: [
-          { option_text: '', is_correct: false },
-          { option_text: '', is_correct: false },
-          { option_text: '', is_correct: false },
-          { option_text: '', is_correct: false },
+          { option_text: '', is_correct: false, option_image: null },
+          { option_text: '', is_correct: false, option_image: null },
+          { option_text: '', is_correct: false, option_image: null },
+          { option_text: '', is_correct: false, option_image: null },
         ],
       },
     ]);
@@ -210,7 +402,7 @@ export function QuizCreateEditView() {
         if (qIdx !== qIndex) return q;
         return {
           ...q,
-          options: [...q.options, { option_text: '', is_correct: false }],
+          options: [...q.options, { option_text: '', is_correct: false, option_image: null }],
         };
       })
     );
@@ -265,6 +457,21 @@ export function QuizCreateEditView() {
     );
   };
 
+  const handleOptionImageChange = (qIndex: number, oIndex: number, file: File | null) => {
+    setQuestions((prev) =>
+      prev.map((q, qIdx) => {
+        if (qIdx !== qIndex) return q;
+        return {
+          ...q,
+          options: q.options.map((opt, oIdx) => {
+            if (oIdx !== oIndex) return opt;
+            return { ...opt, option_image: file };
+          }),
+        };
+      })
+    );
+  };
+
   const handleQuestionChange = (qIndex: number, field: keyof QuestionType, value: any) => {
     setQuestions((prev) =>
       prev.map((q, qIdx) => {
@@ -276,6 +483,61 @@ export function QuizCreateEditView() {
 
   // Calculate Total Marks
   const calculatedTotalMarks = questions.reduce((sum, q) => sum + (Number(q.marks) || 0), 0);
+
+  // Build FormData for multipart submission (PHP requires POST for file uploads)
+  const buildFormData = (): FormData => {
+    const fd = new FormData();
+
+    // Quiz-level fields
+    fd.append('title', quizData.title);
+    fd.append('description', quizData.description || '');
+    if (quizData.class_id) fd.append('class_id', quizData.class_id);
+    if (quizData.institute_id) fd.append('institute_id', quizData.institute_id);
+    if (quizData.scheduled_at) fd.append('scheduled_at', quizData.scheduled_at);
+    fd.append('duration_minutes', String(quizData.duration_minutes));
+    if (quizData.pass_marks) fd.append('pass_marks', String(quizData.pass_marks));
+    fd.append('status', quizData.status);
+    fd.append('randomize_questions', quizData.randomize_questions ? '1' : '0');
+    fd.append('randomize_options', quizData.randomize_options ? '1' : '0');
+
+    // Quiz cover image
+    if (quizImage instanceof File) {
+      fd.append('image', quizImage);
+    } else if (typeof quizImage === 'string') {
+      fd.append('image', quizImage);
+    }
+
+    // For update: PHP can't receive files via PUT, use method spoofing
+    if (isEditing) {
+      fd.append('_method', 'PUT');
+    }
+
+    // Questions & options (bracket notation for Laravel array parsing)
+    questions.forEach((q, qIdx) => {
+      fd.append(`questions[${qIdx}][question_text]`, q.question_text);
+      fd.append(`questions[${qIdx}][explanation]`, q.explanation || '');
+      fd.append(`questions[${qIdx}][marks]`, String(q.marks));
+
+      if (q.question_image instanceof File) {
+        fd.append(`questions[${qIdx}][question_image]`, q.question_image);
+      } else if (typeof q.question_image === 'string' && q.question_image) {
+        fd.append(`questions[${qIdx}][question_image]`, q.question_image);
+      }
+
+      q.options.forEach((opt, oIdx) => {
+        fd.append(`questions[${qIdx}][options][${oIdx}][option_text]`, opt.option_text);
+        fd.append(`questions[${qIdx}][options][${oIdx}][is_correct]`, opt.is_correct ? '1' : '0');
+
+        if (opt.option_image instanceof File) {
+          fd.append(`questions[${qIdx}][options][${oIdx}][option_image]`, opt.option_image);
+        } else if (typeof opt.option_image === 'string' && opt.option_image) {
+          fd.append(`questions[${qIdx}][options][${oIdx}][option_image]`, opt.option_image);
+        }
+      });
+    });
+
+    return fd;
+  };
 
   // Submit Handler
   const handleSubmit = async (e: React.FormEvent) => {
@@ -299,34 +561,29 @@ export function QuizCreateEditView() {
         }
       }
 
-      const payload = {
-        title: quizData.title,
-        description: quizData.description,
-        class_id: quizData.class_id || null,
-        institute_id: quizData.institute_id || null,
-        scheduled_at: quizData.scheduled_at || null,
-        duration_minutes: Number(quizData.duration_minutes),
-        pass_marks: quizData.pass_marks ? Number(quizData.pass_marks) : null,
-        status: quizData.status,
-        randomize_questions: quizData.randomize_questions,
-        randomize_options: quizData.randomize_options,
-        questions,
-      };
+      const formData = buildFormData();
 
-      if (isEditing) {
-        await axiosInstance.put(`/quizzes/${id}`, payload);
-      } else {
-        await axiosInstance.post('/quizzes', payload);
-      }
+      // Always POST — PHP file uploads break on PUT. We use _method=PUT for editing.
+      const url = isEditing ? `/quizzes/${id}` : '/quizzes';
+      await axiosInstance.post(url, formData);
 
       navigate('/quizzes');
     } catch (err: any) {
-      console.error(err);
-      if (err.errors) {
-        const firstError = Object.values(err.errors)[0] as string[];
-        setErrorMsg(firstError[0] || 'Validation failed. Please check inputs.');
+      console.error('Quiz save error:', err);
+      // err = error.response.data from axios interceptor
+      // Validation error: { status, message, errors: MessageBag }
+      if (err?.errors && typeof err.errors === 'object') {
+        const firstKey = Object.keys(err.errors)[0];
+        const firstMsg = Array.isArray(err.errors[firstKey])
+          ? err.errors[firstKey][0]
+          : String(err.errors[firstKey]);
+        setErrorMsg(firstMsg || err.message || 'Validation failed. Please check your inputs.');
+      } else if (err?.message) {
+        setErrorMsg(err.message);
+      } else if (typeof err === 'string') {
+        setErrorMsg(err);
       } else {
-        setErrorMsg(err.message || 'Failed to save quiz.');
+        setErrorMsg('Failed to save quiz. Please try again.');
       }
     } finally {
       setSubmitLoading(false);
@@ -412,6 +669,20 @@ export function QuizCreateEditView() {
                 value={quizData.description}
                 onChange={(e) => setQuizData({ ...quizData, description: e.target.value })}
               />
+
+              {/* Quiz Cover Image */}
+              <Box>
+                <Typography variant="subtitle2" sx={{ mb: 1, color: 'text.secondary' }}>
+                  Cover Image (Optional)
+                </Typography>
+                <ImageUploader
+                  label="Upload Cover Image"
+                  value={quizImage}
+                  onChange={(file) => setQuizImage(file)}
+                  onRemove={() => setQuizImage(null)}
+                  apiBaseUrl={apiBaseUrl}
+                />
+              </Box>
 
               <FormControl fullWidth required={isTeacher}>
                 <InputLabel>Class {isTeacher ? '(Required for Teachers)' : ''}</InputLabel>
@@ -614,6 +885,20 @@ export function QuizCreateEditView() {
                     sx={{ mb: 2 }}
                   />
 
+                  {/* Question Image Upload */}
+                  <Box sx={{ mb: 2 }}>
+                    <Typography variant="caption" sx={{ color: 'text.secondary', mb: 0.75, display: 'block' }}>
+                      Question Image (Optional)
+                    </Typography>
+                    <ImageUploader
+                      label="Upload Question Image"
+                      value={q.question_image}
+                      onChange={(file) => handleQuestionChange(qIndex, 'question_image', file)}
+                      onRemove={() => handleQuestionChange(qIndex, 'question_image', null)}
+                      apiBaseUrl={apiBaseUrl}
+                    />
+                  </Box>
+
                   <TextField
                     fullWidth
                     label="Explanation / Answer Key Notes (Optional)"
@@ -656,6 +941,7 @@ export function QuizCreateEditView() {
                               justifyContent: 'center',
                               fontWeight: 'bold',
                               fontSize: 13,
+                              flexShrink: 0,
                               bgcolor: opt.is_correct ? 'success.main' : 'grey.300',
                               color: opt.is_correct ? 'common.white' : 'text.primary',
                             }}
@@ -668,6 +954,7 @@ export function QuizCreateEditView() {
                               checked={Boolean(opt.is_correct)}
                               onChange={(e) => handleOptionCorrectToggle(qIndex, oIndex, e.target.checked)}
                               color="success"
+                              sx={{ flexShrink: 0 }}
                             />
                           </Tooltip>
 
@@ -678,6 +965,16 @@ export function QuizCreateEditView() {
                             value={opt.option_text}
                             onChange={(e) => handleOptionTextChange(qIndex, oIndex, e.target.value)}
                             required
+                          />
+
+                          {/* Option Image Upload (compact) */}
+                          <ImageUploader
+                            label="Add image"
+                            value={opt.option_image}
+                            onChange={(file) => handleOptionImageChange(qIndex, oIndex, file)}
+                            onRemove={() => handleOptionImageChange(qIndex, oIndex, null)}
+                            compact
+                            apiBaseUrl={apiBaseUrl}
                           />
 
                           <Tooltip title="Remove Option">

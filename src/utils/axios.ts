@@ -8,13 +8,20 @@ const axiosInstance = axios.create({
   },
 });
 
-// Request Interceptor: Automatically attach Sanctum token
+// Request Interceptor: Automatically attach Sanctum token + handle FormData Content-Type
 axiosInstance.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('accessToken');
     if (token && config.headers) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+
+    // When sending FormData, remove the default Content-Type so the browser can
+    // set the correct multipart/form-data boundary automatically.
+    if (config.data instanceof FormData) {
+      delete config.headers['Content-Type'];
+    }
+
     return config;
   },
   (error) => Promise.reject(error)
