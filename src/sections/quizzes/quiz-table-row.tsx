@@ -92,23 +92,62 @@ export function QuizTableRow({
       <TableCell align="right">
         <Stack direction="row" spacing={1} justifyContent="flex-end">
           <Tooltip title="View Quiz Details">
-            <IconButton color="info" onClick={onView} size="small">
-              <Iconify icon="solar:eye-bold" />
+            <IconButton
+              onClick={onView}
+              sx={{
+                width: 36,
+                height: 36,
+                borderRadius: '10px',
+                bgcolor: '#00a76f',
+                color: '#fff',
+                '&:hover': {
+                  bgcolor: '#00a76f',
+                  opacity: 0.9,
+                },
+              }}
+            >
+              <Iconify icon="solar:eye-bold" width={20} />
             </IconButton>
           </Tooltip>
 
           {canEdit && (
             <Tooltip title="Edit Quiz">
-              <IconButton color="primary" onClick={onEdit} size="small">
-                <Iconify icon="solar:pen-bold" />
+              <IconButton
+                onClick={onEdit}
+                sx={{
+                  width: 36,
+                  height: 36,
+                  borderRadius: '10px',
+                  bgcolor: '#4f80ff',
+                  color: '#fff',
+                  '&:hover': {
+                    bgcolor: '#4f80ff',
+                    opacity: 0.9,
+                  },
+                }}
+              >
+                <Iconify icon="solar:pen-bold" width={20} />
               </IconButton>
             </Tooltip>
           )}
 
           {canDelete && (
             <Tooltip title="Delete Quiz">
-              <IconButton color="error" onClick={onDelete} size="small">
-                <Iconify icon="solar:trash-bin-trash-bold" />
+              <IconButton
+                onClick={onDelete}
+                sx={{
+                  width: 36,
+                  height: 36,
+                  borderRadius: '10px',
+                  bgcolor: '#ff7a5a',
+                  color: '#fff',
+                  '&:hover': {
+                    bgcolor: '#ff7a5a',
+                    opacity: 0.9,
+                  },
+                }}
+              >
+                <Iconify icon="solar:trash-bin-trash-bold" width={20} />
               </IconButton>
             </Tooltip>
           )}
