@@ -55,7 +55,9 @@ export function ProfileView() {
       });
       if (user.profile_picture) {
         setPreviewUrl(
-          `${import.meta.env.VITE_STORAGE_URL || 'http://localhost:8000/storage'}/${user.profile_picture}`
+          user.profile_picture.startsWith('http://') || user.profile_picture.startsWith('https://')
+            ? user.profile_picture
+            : `${import.meta.env.VITE_STORAGE_URL || 'http://localhost:8000/storage'}/${user.profile_picture}`
         );
       }
     }

@@ -62,11 +62,17 @@ type ImageUploaderProps = {
 function ImageUploader({ label, value, onChange, onRemove, compact = false, apiBaseUrl = '' }: ImageUploaderProps) {
   const inputRef = useRef<HTMLInputElement>(null);
 
+  const storageBaseUrl =
+    import.meta.env.VITE_STORAGE_URL ||
+    (apiBaseUrl ? `${apiBaseUrl}/storage` : 'http://localhost:8000/storage');
+
   const previewSrc =
     value instanceof File
       ? URL.createObjectURL(value)
       : value
-        ? `${apiBaseUrl}/storage/${value}`
+        ? (typeof value === 'string' && (value.startsWith('http://') || value.startsWith('https://'))
+            ? value
+            : `${storageBaseUrl}/${value}`)
         : null;
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -240,7 +246,10 @@ export function QuizCreateEditView() {
     !userRoles.includes('Admin') &&
     !userRoles.includes('Institute Owner');
 
-  const apiBaseUrl = import.meta.env.VITE_API_URL?.replace('/api/v1', '') || 'http://localhost:8000';
+  const apiBaseUrl =
+    import.meta.env.VITE_STORAGE_URL?.replace(/\/storage\/?$/, '') ||
+    import.meta.env.VITE_API_URL?.replace(/\/api\/v1\/?$/, '') ||
+    'http://localhost:8000';
 
   const [loading, setLoading] = useState(false);
   const [submitLoading, setSubmitLoading] = useState(false);

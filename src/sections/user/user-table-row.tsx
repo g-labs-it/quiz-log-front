@@ -73,7 +73,16 @@ export function UserTableRow({ row, selected, onSelectRow, onEditRow, onDeleteRo
               alignItems: 'center',
             }}
           >
-            <Avatar alt={row.name} src={row.profile_picture ? `http://localhost:8000/storage/${row.profile_picture}` : ''} />
+            <Avatar
+              alt={row.name}
+              src={
+                row.profile_picture
+                  ? (row.profile_picture.startsWith('http://') || row.profile_picture.startsWith('https://')
+                      ? row.profile_picture
+                      : `${import.meta.env.VITE_STORAGE_URL || 'http://localhost:8000/storage'}/${row.profile_picture}`)
+                  : ''
+              }
+            />
             {row.name}
           </Box>
         </TableCell>
