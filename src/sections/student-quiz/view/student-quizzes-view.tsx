@@ -245,6 +245,15 @@ export function StudentQuizzesView() {
 
                     {/* Quiz meta details */}
                     <Stack spacing={1} sx={{ mt: 'auto', pt: 2, borderTop: '1px dashed', borderColor: 'divider' }}>
+                      {quiz.scheduled_at && (
+                        <Stack direction="row" alignItems="center" spacing={1}>
+                          <Iconify icon="solar:calendar-bold" width={16} color="text.secondary" />
+                          <Typography variant="caption" color="text.secondary">
+                            Scheduled: <strong>{new Date(quiz.scheduled_at).toLocaleString()}</strong>
+                          </Typography>
+                        </Stack>
+                      )}
+
                       <Stack direction="row" alignItems="center" spacing={1}>
                         <Iconify icon="solar:clock-circle-bold" width={16} color="text.secondary" />
                         <Typography variant="caption" color="text.secondary">

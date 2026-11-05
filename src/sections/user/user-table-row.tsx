@@ -10,6 +10,8 @@ import TableCell from '@mui/material/TableCell';
 import IconButton from '@mui/material/IconButton';
 import MenuItem, { menuItemClasses } from '@mui/material/MenuItem';
 
+import { getImageUrl } from 'src/utils/image-url';
+
 import { Label } from 'src/components/label';
 import { Iconify } from 'src/components/iconify';
 
@@ -18,6 +20,8 @@ import { Iconify } from 'src/components/iconify';
 export type UserProps = {
   id: number;
   name: string;
+  username?: string;
+  student_code?: string;
   email: string;
   phone: string;
   address?: string;
@@ -32,9 +36,17 @@ type UserTableRowProps = {
   onSelectRow: () => void;
   onEditRow: () => void;
   onDeleteRow: () => void;
+  onResetPassword?: () => void;
 };
 
-export function UserTableRow({ row, selected, onSelectRow, onEditRow, onDeleteRow }: UserTableRowProps) {
+export function UserTableRow({
+  row,
+  selected,
+  onSelectRow,
+  onEditRow,
+  onDeleteRow,
+  onResetPassword,
+}: UserTableRowProps) {
   const [openPopover, setOpenPopover] = useState<HTMLButtonElement | null>(null);
 
   const handleOpenPopover = useCallback((event: React.MouseEvent<HTMLButtonElement>) => {
@@ -75,19 +87,36 @@ export function UserTableRow({ row, selected, onSelectRow, onEditRow, onDeleteRo
           >
             <Avatar
               alt={row.name}
-              src={
-                row.profile_picture
-                  ? (row.profile_picture.startsWith('http://') || row.profile_picture.startsWith('https://')
-                      ? row.profile_picture
-                      : `${import.meta.env.VITE_STORAGE_URL || 'http://localhost:8000/storage'}/${row.profile_picture}`)
-                  : ''
-              }
+              src={row.profile_picture ? getImageUrl(row.profile_picture) : ''}
             />
             {row.name}
           </Box>
         </TableCell>
 
-        <TableCell>{row.email}</TableCell>
+        <TableCell>
+          {row.role?.toLowerCase() === 'student' || row.student_code ? (
+            <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+              <Box
+                component="span"
+                sx={{
+                  fontFamily: 'monospace',
+                  fontWeight: 600,
+                  color: 'primary.main',
+                  fontSize: '0.85rem',
+                }}
+              >
+                {row.student_code || row.username || '—'}
+              </Box>
+              {row.email && (
+                <Box component="span" sx={{ typography: 'caption', color: 'text.secondary' }}>
+                  {row.email}
+                </Box>
+              )}
+            </Box>
+          ) : (
+            row.email || '—'
+          )}
+        </TableCell>
 
         <TableCell>{row.phone}</TableCell>
 
@@ -116,7 +145,7 @@ export function UserTableRow({ row, selected, onSelectRow, onEditRow, onDeleteRo
           sx={{
             p: 0.5,
             gap: 0.5,
-            width: 140,
+            width: 170,
             display: 'flex',
             flexDirection: 'column',
             [`& .${menuItemClasses.root}`]: {
@@ -136,6 +165,18 @@ export function UserTableRow({ row, selected, onSelectRow, onEditRow, onDeleteRo
             <Iconify icon="solar:pen-bold" />
             Edit
           </MenuItem>
+
+          {onResetPassword && (
+            <MenuItem
+              onClick={() => {
+                onResetPassword();
+                handleClosePopover();
+              }}
+            >
+              <Iconify icon="solar:lock-password-bold" />
+              Reset Password
+            </MenuItem>
+          )}
 
           <MenuItem
             onClick={() => {

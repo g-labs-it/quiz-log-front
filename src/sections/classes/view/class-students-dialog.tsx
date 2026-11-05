@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useRef, useState, useEffect, useCallback } from 'react';
 
 import Box from '@mui/material/Box';
 import Tab from '@mui/material/Tab';
@@ -95,7 +95,10 @@ export function ClassStudentsDialog({ open, onClose, cls }: ClassStudentsDialogP
 
   // Bulk add state
   const [bulkText, setBulkText] = useState('');
+  const [uploadedFileName, setUploadedFileName] = useState('');
+  const [isDragging, setIsDragging] = useState(false);
   const [bulkSubmitting, setBulkSubmitting] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [bulkResults, setBulkResults] = useState<{
     total: number;
     enrolled: number;
@@ -146,6 +149,8 @@ export function ClassStudentsDialog({ open, onClose, cls }: ClassStudentsDialogP
       setSingleName('');
       setSingleEmail('');
       setBulkText('');
+      setUploadedFileName('');
+      setIsDragging(false);
       setErrorMsg('');
       setSuccessMsg('');
     }
@@ -187,20 +192,101 @@ export function ClassStudentsDialog({ open, onClose, cls }: ClassStudentsDialogP
     }
   };
 
+  // Helper to split a line by tab, semicolon, or comma
+  const splitLine = (line: string): string[] => {
+    if (line.includes('\t')) {
+      return line.split('\t').map((p) => p.trim().replace(/^["']|["']$/g, ''));
+    }
+    if (line.includes(';') && !line.includes(',')) {
+      return line.split(';').map((p) => p.trim().replace(/^["']|["']$/g, ''));
+    }
+    return line.split(',').map((p) => p.trim().replace(/^["']|["']$/g, ''));
+  };
+
+  // Helper to parse CSV or multi-line text into structured student records
+  const parseCsvText = (text: string) => {
+    const rawLines = text.split(/\r?\n/).map((l) => l.trim()).filter((l) => l.length > 0);
+    if (rawLines.length === 0) return [];
+
+    // Check if the very first line is a header row
+    // A header row has a label like "studentcode", "code", "student", "roll", or "id", AND has NO numeric digits
+    const firstParts = splitLine(rawLines[0]);
+    const firstColClean = (firstParts[0] || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+    const hasDigits = /\d/.test(firstParts[0] || '');
+    const headerKeywords = ['studentcode', 'code', 'student', 'id', 'roll', 'regno', 'studentname'];
+
+    const isHeaderRow = !hasDigits && headerKeywords.some((kw) => firstColClean === kw || firstColClean.startsWith(kw));
+
+    const linesToProcess = isHeaderRow ? rawLines.slice(1) : rawLines;
+
+    return linesToProcess
+      .map((line) => {
+        const parts = splitLine(line);
+        return {
+          student_code: parts[0] || '',
+          name: parts[1] || (parts[0] ? `Student ${parts[0]}` : ''),
+          email: parts[2] || null,
+        };
+      })
+      .filter((item) => item.student_code.length > 0);
+  };
+
+  // CSV file picker & drag-and-drop handler
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.name.toLowerCase().endsWith('.csv') && file.type !== 'text/csv' && file.type !== 'application/vnd.ms-excel') {
+      setErrorMsg('Please upload a valid .csv file.');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const content = event.target?.result as string;
+      if (!content) return;
+
+      const parsed = parseCsvText(content);
+      if (parsed.length === 0) {
+        setErrorMsg('No student records found in the selected CSV file.');
+        return;
+      }
+
+      setUploadedFileName(`${file.name} (${parsed.length} students)`);
+      const formatted = parsed
+        .map((p) => (p.email ? `${p.student_code}, ${p.name}, ${p.email}` : `${p.student_code}, ${p.name}`))
+        .join('\n');
+      setBulkText(formatted);
+      setSuccessMsg(`Loaded ${parsed.length} student records from ${file.name}. Review below and click "Import & Enroll Students".`);
+    };
+
+    reader.onerror = () => {
+      setErrorMsg('Failed to read the uploaded CSV file.');
+    };
+
+    reader.readAsText(file);
+    e.target.value = '';
+  };
+
+  // Download template sample CSV
+  const handleDownloadSampleCsv = () => {
+    const sampleCsvContent = 'StudentCode,Name,Email\n001,John Doe,john@example.com\n002,Alice Smith,alice@example.com\n003,Bob Dylan,\nSTU004,Jane Doe,jane@example.com\n';
+    const blob = new Blob([sampleCsvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', 'sample_students_import.csv');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
   // Bulk add parse & submit
   const handleBulkSubmit = async () => {
     if (!cls?.id || !bulkText.trim()) return;
 
-    // Parse lines: STU001, John Doe, john@example.com OR 001, John Doe
-    const lines = bulkText.split('\n').filter((l) => l.trim().length > 0);
-    const parsed = lines.map((line) => {
-      const parts = line.split(',').map((p) => p.trim());
-      return {
-        student_code: parts[0] || '',
-        name: parts[1] || `Student ${parts[0]}`,
-        email: parts[2] || null,
-      };
-    }).filter((item) => item.student_code.length > 0);
+    const parsed = parseCsvText(bulkText);
 
     if (parsed.length === 0) {
       setErrorMsg('No valid rows parsed. Each line should be: StudentCode, Name, Email (optional)');
@@ -493,25 +579,137 @@ export function ClassStudentsDialog({ open, onClose, cls }: ClassStudentsDialogP
           {currentTab === 2 && (
             <Stack spacing={2.5}>
               <Alert severity="info" variant="outlined">
-                Paste student records below, one per line in the format:
-                <br />
-                <code>StudentCode, Full Name, Email (optional)</code>
-                <br />
-                Example:
-                <br />
-                <code>001, John Doe, john@example.com</code>
-                <br />
-                <code>STU002, Alice Smith</code>
+                <Stack
+                  direction={{ xs: 'column', sm: 'row' }}
+                  justifyContent="space-between"
+                  alignItems={{ sm: 'center' }}
+                  spacing={1.5}
+                >
+                  <Box>
+                    Upload a <strong>.CSV</strong> file or paste student records below in the format:
+                    <br />
+                    <code>StudentCode, Full Name, Email (optional)</code>
+                  </Box>
+                  <Button
+                    size="small"
+                    variant="outlined"
+                    color="info"
+                    startIcon={<Iconify icon="solar:download-bold" />}
+                    onClick={handleDownloadSampleCsv}
+                    sx={{ flexShrink: 0, textTransform: 'none', fontWeight: 600 }}
+                  >
+                    Download Sample CSV
+                  </Button>
+                </Stack>
               </Alert>
+
+              {/* Hidden file input */}
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".csv,text/csv,application/vnd.ms-excel"
+                style={{ display: 'none' }}
+                onChange={handleFileUpload}
+              />
+
+              {/* CSV Upload Dropzone Card */}
+              <Box
+                onDragOver={(e) => {
+                  e.preventDefault();
+                  setIsDragging(true);
+                }}
+                onDragLeave={() => setIsDragging(false)}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  setIsDragging(false);
+                  const file = e.dataTransfer.files?.[0];
+                  if (file) {
+                    const fakeEvent = { target: { files: [file], value: '' } } as any;
+                    handleFileUpload(fakeEvent);
+                  }
+                }}
+                onClick={() => fileInputRef.current?.click()}
+                sx={{
+                  py: 3,
+                  px: 2,
+                  borderRadius: 1.5,
+                  border: '1.5px dashed',
+                  borderColor: isDragging ? 'primary.main' : 'divider',
+                  bgcolor: isDragging ? 'action.hover' : 'background.neutral',
+                  cursor: 'pointer',
+                  textAlign: 'center',
+                  transition: 'all 0.2s ease',
+                  '&:hover': {
+                    borderColor: 'primary.main',
+                    bgcolor: 'action.hover',
+                  },
+                }}
+              >
+                <Box
+                  sx={{
+                    width: 48,
+                    height: 48,
+                    borderRadius: '50%',
+                    bgcolor: 'background.paper',
+                    color: 'primary.main',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    mb: 1,
+                    boxShadow: '0 2px 8px 0 rgba(0,0,0,0.06)',
+                  }}
+                >
+                  <Iconify icon="solar:cloud-upload-bold" width={28} />
+                </Box>
+                <Typography variant="subtitle2" sx={{ mb: 0.5 }}>
+                  Click to browse or drag and drop your CSV file here
+                </Typography>
+                <Typography variant="caption" color="text.secondary">
+                  Columns: StudentCode, Name, Email (optional) — Maximum 500 rows per batch
+                </Typography>
+              </Box>
+
+              {uploadedFileName && (
+                <Stack
+                  direction="row"
+                  alignItems="center"
+                  justifyContent="space-between"
+                  sx={{
+                    p: 1.5,
+                    borderRadius: 1,
+                    bgcolor: 'success.lighter',
+                    border: '1px solid',
+                    borderColor: 'success.light',
+                  }}
+                >
+                  <Stack direction="row" alignItems="center" spacing={1}>
+                    <Iconify icon="solar:file-check-bold" color="success.main" width={20} />
+                    <Typography variant="body2" fontWeight={600} color="success.darker">
+                      {uploadedFileName}
+                    </Typography>
+                  </Stack>
+                  <IconButton
+                    size="small"
+                    onClick={() => {
+                      setUploadedFileName('');
+                      setBulkText('');
+                    }}
+                    sx={{ color: 'success.dark' }}
+                  >
+                    <Iconify icon="solar:close-circle-bold" width={18} />
+                  </IconButton>
+                </Stack>
+              )}
 
               <TextField
                 fullWidth
                 multiline
-                rows={6}
-                label="Paste Student Data"
+                rows={5}
+                label="Student Data (CSV Text Preview / Manual Paste)"
                 placeholder={`001, John Doe, john@example.com\n002, Alice Smith\n003, Bob Dylan, bob@example.com`}
                 value={bulkText}
                 onChange={(e) => setBulkText(e.target.value)}
+                helperText="Upload a CSV above or paste and edit raw records directly here."
               />
 
               <Stack direction="row" spacing={2} justifyContent="flex-end">
@@ -519,7 +717,13 @@ export function ClassStudentsDialog({ open, onClose, cls }: ClassStudentsDialogP
                   variant="contained"
                   disabled={bulkSubmitting || !bulkText.trim()}
                   onClick={handleBulkSubmit}
-                  startIcon={bulkSubmitting ? <CircularProgress size={18} /> : <Iconify icon="solar:users-group-rounded-bold" />}
+                  startIcon={
+                    bulkSubmitting ? (
+                      <CircularProgress size={18} />
+                    ) : (
+                      <Iconify icon="solar:users-group-rounded-bold" />
+                    )
+                  }
                 >
                   Import & Enroll Students
                 </Button>

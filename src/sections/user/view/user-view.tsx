@@ -33,6 +33,7 @@ import { TableNoData } from '../table-no-data';
 import { UserTableRow } from '../user-table-row';
 import { UserTableHead } from '../user-table-head';
 import { TableEmptyRows } from '../table-empty-rows';
+import { UserResetPasswordDialog } from '../user-reset-password-dialog';
 
 import type { UserProps } from '../user-table-row';
 
@@ -62,6 +63,14 @@ export function UserView() {
 
   const [openDeleteModal, setOpenDeleteModal] = useState(false);
   const [userToDelete, setUserToDelete] = useState<UserProps | null>(null);
+
+  const [openResetPasswordModal, setOpenResetPasswordModal] = useState(false);
+  const [userToResetPassword, setUserToResetPassword] = useState<UserProps | null>(null);
+
+  const handleOpenResetPassword = (user: UserProps) => {
+    setUserToResetPassword(user);
+    setOpenResetPasswordModal(true);
+  };
 
   const [formData, setFormData] = useState({
     name: '',
@@ -352,7 +361,7 @@ export function UserView() {
                 onSelectAllRows={() => {}}
                 headLabel={[
                   { id: 'name', label: 'Name' },
-                  { id: 'email', label: 'Email' },
+                  { id: 'email', label: 'Email / Student Code' },
                   { id: 'phone', label: 'Phone' },
                   { id: 'role', label: 'Role' },
                   { id: 'status', label: 'Status' },
@@ -368,6 +377,7 @@ export function UserView() {
                     onSelectRow={() => {}}
                     onEditRow={() => handleOpenEdit(row)}
                     onDeleteRow={() => handleOpenDelete(row)}
+                    onResetPassword={() => handleOpenResetPassword(row)}
                   />
                 ))}
 
@@ -568,6 +578,20 @@ export function UserView() {
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* Password Reset Modal */}
+      <UserResetPasswordDialog
+        open={openResetPasswordModal}
+        onClose={() => {
+          setOpenResetPasswordModal(false);
+          setUserToResetPassword(null);
+        }}
+        user={userToResetPassword}
+        onSuccess={(msg) => {
+          setSuccessMsg(msg);
+          fetchUsers();
+        }}
+      />
     </DashboardContent>
   );
 }

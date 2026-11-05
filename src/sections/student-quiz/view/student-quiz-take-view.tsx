@@ -87,6 +87,16 @@ export function StudentQuizTakeView() {
         setQuiz(data.quiz);
         setQuestions(data.questions || []);
         setTimeLeft(Math.max(0, Math.floor(Number(data.quiz.remaining_seconds) || 0)));
+
+        // Restore saved draft answers from localStorage if any
+        try {
+          const savedAnswers = localStorage.getItem(`quiz_attempt_${data.attempt_id}_answers`);
+          if (savedAnswers) {
+            setAnswers(JSON.parse(savedAnswers));
+          }
+        } catch {
+          // ignore parsing error
+        }
       }
     } catch (err: any) {
       console.error(err);
@@ -99,6 +109,17 @@ export function StudentQuizTakeView() {
   useEffect(() => {
     initAttempt();
   }, [initAttempt]);
+
+  // Persist answers to localStorage as student selects options
+  useEffect(() => {
+    if (attemptId && Object.keys(answers).length > 0) {
+      try {
+        localStorage.setItem(`quiz_attempt_${attemptId}_answers`, JSON.stringify(answers));
+      } catch {
+        // ignore storage quota error
+      }
+    }
+  }, [attemptId, answers]);
 
   // Actual submit handler
   const handleSubmitQuiz = useCallback(async () => {
@@ -118,6 +139,11 @@ export function StudentQuizTakeView() {
       });
 
       if (response.data?.status === 'success' || response.data?.success || response.data?.data) {
+        try {
+          localStorage.removeItem(`quiz_attempt_${attemptId}_answers`);
+        } catch {
+          // ignore
+        }
         navigate(`/student/quiz-attempts/${attemptId}/review`, { replace: true });
       }
     } catch (err: any) {
