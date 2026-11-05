@@ -24,3 +24,4 @@ export function getImageUrl(path: string | null | undefined): string {
   const cleanPath = trimmed.replace(/^\/+/, '').replace(/^storage\/+/, '');
   return `${CONFIG.storageUrl}/${cleanPath}`;
 }
+
