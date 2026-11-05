@@ -59,6 +59,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
       loading: false,
       user,
     });
+
+    return user;
   }, []);
 
   // REGISTER

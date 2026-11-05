@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { Link as RouterLink, useSearchParams } from 'react-router-dom';
+import { useSearchParams, Link as RouterLink } from 'react-router-dom';
 
 import Box from '@mui/material/Box';
 import Link from '@mui/material/Link';

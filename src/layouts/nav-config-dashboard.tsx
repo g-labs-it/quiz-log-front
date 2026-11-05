@@ -10,6 +10,7 @@ export type NavItem = {
   icon: React.ReactNode;
   info?: React.ReactNode;
   permission?: string;
+  role?: string;
   children?: {
     title: string;
     path: string;
@@ -23,6 +24,12 @@ export const navData = [
     path: '/',
     icon: icon('ic-analytics'),
     permission: 'view_dashboard',
+  },
+  {
+    title: 'My Quizzes',
+    path: '/student/quizzes',
+    icon: icon('ic-blog'),
+    role: 'Student',
   },
   {
     title: 'Master Data',
