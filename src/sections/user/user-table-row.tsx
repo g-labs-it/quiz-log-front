@@ -36,9 +36,17 @@ type UserTableRowProps = {
   onSelectRow: () => void;
   onEditRow: () => void;
   onDeleteRow: () => void;
+  onResetPassword?: () => void;
 };
 
-export function UserTableRow({ row, selected, onSelectRow, onEditRow, onDeleteRow }: UserTableRowProps) {
+export function UserTableRow({
+  row,
+  selected,
+  onSelectRow,
+  onEditRow,
+  onDeleteRow,
+  onResetPassword,
+}: UserTableRowProps) {
   const [openPopover, setOpenPopover] = useState<HTMLButtonElement | null>(null);
 
   const handleOpenPopover = useCallback((event: React.MouseEvent<HTMLButtonElement>) => {
@@ -137,7 +145,7 @@ export function UserTableRow({ row, selected, onSelectRow, onEditRow, onDeleteRo
           sx={{
             p: 0.5,
             gap: 0.5,
-            width: 140,
+            width: 170,
             display: 'flex',
             flexDirection: 'column',
             [`& .${menuItemClasses.root}`]: {
@@ -157,6 +165,18 @@ export function UserTableRow({ row, selected, onSelectRow, onEditRow, onDeleteRo
             <Iconify icon="solar:pen-bold" />
             Edit
           </MenuItem>
+
+          {onResetPassword && (
+            <MenuItem
+              onClick={() => {
+                onResetPassword();
+                handleClosePopover();
+              }}
+            >
+              <Iconify icon="solar:lock-password-bold" />
+              Reset Password
+            </MenuItem>
+          )}
 
           <MenuItem
             onClick={() => {
