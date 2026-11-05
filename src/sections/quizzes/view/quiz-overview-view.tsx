@@ -23,6 +23,7 @@ import TableContainer from '@mui/material/TableContainer';
 import CircularProgress from '@mui/material/CircularProgress';
 
 import axiosInstance from 'src/utils/axios';
+import { getImageUrl } from 'src/utils/image-url';
 
 import { DashboardContent } from 'src/layouts/dashboard';
 
@@ -179,6 +180,20 @@ export function QuizOverviewView() {
           {/* Left Column: Summary Card */}
           <Grid size={{ xs: 12, md: 4 }}>
             <Card sx={{ p: 3 }}>
+              {quiz.image && (
+                <Box
+                  component="img"
+                  src={getImageUrl(quiz.image)}
+                  alt={quiz.title}
+                  sx={{
+                    width: '100%',
+                    height: 160,
+                    borderRadius: 1.5,
+                    objectFit: 'cover',
+                    mb: 2.5,
+                  }}
+                />
+              )}
               <Typography variant="h6" sx={{ mb: 2 }}>
                 Quiz Details
               </Typography>
@@ -254,6 +269,17 @@ export function QuizOverviewView() {
                     <Chip label={`${q.marks} Marks`} size="small" variant="outlined" />
                   </Box>
 
+                  {q.question_image && (
+                    <Box sx={{ my: 1.5 }}>
+                      <Box
+                        component="img"
+                        src={getImageUrl(q.question_image)}
+                        alt="Question"
+                        sx={{ maxHeight: 200, maxWidth: '100%', borderRadius: 1 }}
+                      />
+                    </Box>
+                  )}
+
                   {q.explanation && (
                     <Typography variant="body2" color="text.secondary" sx={{ mb: 2, fontStyle: 'italic' }}>
                       Note: {q.explanation}
@@ -274,9 +300,19 @@ export function QuizOverviewView() {
                           justifyContent: 'space-between',
                         }}
                       >
-                        <Typography variant="body2">
-                          <strong>{String.fromCharCode(65 + oIndex)}.</strong> {opt.option_text}
-                        </Typography>
+                        <Stack direction="row" spacing={1.5} alignItems="center">
+                          {opt.option_image && (
+                            <Box
+                              component="img"
+                              src={getImageUrl(opt.option_image)}
+                              alt="Option"
+                              sx={{ width: 32, height: 32, borderRadius: 0.5, objectFit: 'cover' }}
+                            />
+                          )}
+                          <Typography variant="body2">
+                            <strong>{String.fromCharCode(65 + oIndex)}.</strong> {opt.option_text}
+                          </Typography>
+                        </Stack>
 
                         {opt.is_correct && (
                           <Chip label="Correct Answer" color="success" size="small" />

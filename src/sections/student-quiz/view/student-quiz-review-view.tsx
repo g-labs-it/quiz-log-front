@@ -12,6 +12,7 @@ import Typography from '@mui/material/Typography';
 import CircularProgress from '@mui/material/CircularProgress';
 
 import axiosInstance from 'src/utils/axios';
+import { getImageUrl } from 'src/utils/image-url';
 
 import { DashboardContent } from 'src/layouts/dashboard';
 
@@ -284,7 +285,7 @@ export function StudentQuizReviewView() {
                   <Box sx={{ mb: 2 }}>
                     <Box
                       component="img"
-                      src={q.question_image}
+                      src={getImageUrl(q.question_image)}
                       alt="Question"
                       sx={{ maxHeight: 200, maxWidth: '100%', borderRadius: 1 }}
                     />
@@ -352,6 +353,14 @@ export function StudentQuizReviewView() {
                                 : 'text.disabled'
                             }
                           />
+                          {opt.option_image && (
+                            <Box
+                              component="img"
+                              src={getImageUrl(opt.option_image)}
+                              alt="Option"
+                              sx={{ width: 36, height: 36, borderRadius: 1, objectFit: 'cover' }}
+                            />
+                          )}
                           <Typography variant="body2" fontWeight={wasChosen || isCorrect ? 600 : 400}>
                             {opt.option_text}
                           </Typography>

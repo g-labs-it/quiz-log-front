@@ -20,6 +20,7 @@ import FormControlLabel from '@mui/material/FormControlLabel';
 import CircularProgress from '@mui/material/CircularProgress';
 
 import axiosInstance from 'src/utils/axios';
+import { getImageUrl } from 'src/utils/image-url';
 
 import { DashboardContent } from 'src/layouts/dashboard';
 
@@ -85,7 +86,7 @@ export function StudentQuizTakeView() {
         setAttemptId(data.attempt_id);
         setQuiz(data.quiz);
         setQuestions(data.questions || []);
-        setTimeLeft(Math.max(0, data.quiz.remaining_seconds));
+        setTimeLeft(Math.max(0, Math.floor(Number(data.quiz.remaining_seconds) || 0)));
       }
     } catch (err: any) {
       console.error(err);
@@ -147,9 +148,14 @@ export function StudentQuizTakeView() {
     return undefined;
   }, [loading, quiz, timeLeft, handleSubmitQuiz]);
 
-  const formatTimer = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
+  const formatTimer = (rawSeconds: number) => {
+    const totalSecs = Math.max(0, Math.floor(Number(rawSeconds) || 0));
+    const hours = Math.floor(totalSecs / 3600);
+    const mins = Math.floor((totalSecs % 3600) / 60);
+    const secs = totalSecs % 60;
+    if (hours > 0) {
+      return `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    }
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
@@ -297,7 +303,7 @@ export function StudentQuizTakeView() {
                   <Box sx={{ mb: 3, textAlign: 'center' }}>
                     <Box
                       component="img"
-                      src={currentQuestion.question_image}
+                      src={getImageUrl(currentQuestion.question_image)}
                       alt="Question Image"
                       sx={{ maxHeight: 240, maxWidth: '100%', borderRadius: 1.5, objectFit: 'contain' }}
                     />
@@ -334,9 +340,19 @@ export function StudentQuizTakeView() {
                                 />
                               }
                               label={
-                                <Typography variant="body1" fontWeight={isChecked ? 600 : 400}>
-                                  {option.option_text}
-                                </Typography>
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                                  {option.option_image && (
+                                    <Box
+                                      component="img"
+                                      src={getImageUrl(option.option_image)}
+                                      alt="Option"
+                                      sx={{ width: 40, height: 40, borderRadius: 1, objectFit: 'cover' }}
+                                    />
+                                  )}
+                                  <Typography variant="body1" fontWeight={isChecked ? 600 : 400}>
+                                    {option.option_text}
+                                  </Typography>
+                                </Box>
                               }
                               sx={{ m: 0, width: '100%' }}
                             />
@@ -372,9 +388,19 @@ export function StudentQuizTakeView() {
                                 value={option.id}
                                 control={<Radio />}
                                 label={
-                                  <Typography variant="body1" fontWeight={isSelected ? 600 : 400}>
-                                    {option.option_text}
-                                  </Typography>
+                                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                                    {option.option_image && (
+                                      <Box
+                                        component="img"
+                                        src={getImageUrl(option.option_image)}
+                                        alt="Option"
+                                        sx={{ width: 40, height: 40, borderRadius: 1, objectFit: 'cover' }}
+                                      />
+                                    )}
+                                    <Typography variant="body1" fontWeight={isSelected ? 600 : 400}>
+                                      {option.option_text}
+                                    </Typography>
+                                  </Box>
                                 }
                                 sx={{ m: 0, width: '100%' }}
                               />

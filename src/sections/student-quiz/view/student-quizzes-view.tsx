@@ -14,6 +14,7 @@ import InputAdornment from '@mui/material/InputAdornment';
 import CircularProgress from '@mui/material/CircularProgress';
 
 import axiosInstance from 'src/utils/axios';
+import { getImageUrl } from 'src/utils/image-url';
 
 import { DashboardContent } from 'src/layouts/dashboard';
 
@@ -205,6 +206,21 @@ export function StudentQuizzesView() {
                         <Chip label="Available" size="small" color="default" variant="outlined" />
                       )}
                     </Stack>
+
+                    {quiz.image && (
+                      <Box
+                        component="img"
+                        src={getImageUrl(quiz.image)}
+                        alt={quiz.title}
+                        sx={{
+                          width: '100%',
+                          height: 140,
+                          borderRadius: 1.5,
+                          objectFit: 'cover',
+                          mb: 2,
+                        }}
+                      />
+                    )}
 
                     {/* Title & description */}
                     <Typography variant="h6" sx={{ mb: 1, fontWeight: 700 }}>

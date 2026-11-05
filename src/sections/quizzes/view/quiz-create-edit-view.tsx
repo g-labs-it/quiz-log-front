@@ -22,6 +22,7 @@ import FormControlLabel from '@mui/material/FormControlLabel';
 import CircularProgress from '@mui/material/CircularProgress';
 
 import axiosInstance from 'src/utils/axios';
+import { getImageUrl } from 'src/utils/image-url';
 
 import { useAuth } from 'src/auth';
 import { DashboardContent } from 'src/layouts/dashboard';
@@ -62,17 +63,11 @@ type ImageUploaderProps = {
 function ImageUploader({ label, value, onChange, onRemove, compact = false, apiBaseUrl = '' }: ImageUploaderProps) {
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const storageBaseUrl =
-    import.meta.env.VITE_STORAGE_URL ||
-    (apiBaseUrl ? `${apiBaseUrl}/storage` : 'http://localhost:8000/storage');
-
   const previewSrc =
     value instanceof File
       ? URL.createObjectURL(value)
-      : value
-        ? (typeof value === 'string' && (value.startsWith('http://') || value.startsWith('https://'))
-            ? value
-            : `${storageBaseUrl}/${value}`)
+      : typeof value === 'string' && value
+        ? getImageUrl(value)
         : null;
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
