@@ -352,7 +352,7 @@ export function UserView() {
                 onSelectAllRows={() => {}}
                 headLabel={[
                   { id: 'name', label: 'Name' },
-                  { id: 'email', label: 'Email' },
+                  { id: 'email', label: 'Email / Student Code' },
                   { id: 'phone', label: 'Phone' },
                   { id: 'role', label: 'Role' },
                   { id: 'status', label: 'Status' },
