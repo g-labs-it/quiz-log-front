@@ -223,6 +223,20 @@ function ImageUploader({ label, value, onChange, onRemove, compact = false, apiB
   );
 }
 
+// Convert UTC/ISO date string to local YYYY-MM-DDTHH:mm for datetime-local input
+const toLocalDatetimeInput = (isoString?: string | null): string => {
+  if (!isoString) return '';
+  const d = new Date(isoString);
+  if (isNaN(d.getTime())) return '';
+  const pad = (n: number) => n.toString().padStart(2, '0');
+  const year = d.getFullYear();
+  const month = pad(d.getMonth() + 1);
+  const day = pad(d.getDate());
+  const hours = pad(d.getHours());
+  const minutes = pad(d.getMinutes());
+  return `${year}-${month}-${day}T${hours}:${minutes}`;
+};
+
 // ----------------------------------------------------------------------
 
 export function QuizCreateEditView() {
@@ -327,7 +341,7 @@ export function QuizCreateEditView() {
           description: q.description || '',
           class_id: q.class_id ? String(q.class_id) : '',
           institute_id: q.institute_id ? String(q.institute_id) : '',
-          scheduled_at: q.scheduled_at ? q.scheduled_at.slice(0, 16) : '',
+          scheduled_at: toLocalDatetimeInput(q.scheduled_at),
           duration_minutes: q.duration_minutes || 30,
           pass_marks: q.pass_marks !== null && q.pass_marks !== undefined ? String(q.pass_marks) : '',
           status: q.status || 'DRAFT',
@@ -497,7 +511,14 @@ export function QuizCreateEditView() {
     fd.append('description', quizData.description || '');
     if (quizData.class_id) fd.append('class_id', quizData.class_id);
     if (quizData.institute_id) fd.append('institute_id', quizData.institute_id);
-    if (quizData.scheduled_at) fd.append('scheduled_at', quizData.scheduled_at);
+    if (quizData.scheduled_at) {
+      const localDate = new Date(quizData.scheduled_at);
+      if (!isNaN(localDate.getTime())) {
+        fd.append('scheduled_at', localDate.toISOString());
+      } else {
+        fd.append('scheduled_at', quizData.scheduled_at);
+      }
+    }
     fd.append('duration_minutes', String(quizData.duration_minutes));
     if (quizData.pass_marks) fd.append('pass_marks', String(quizData.pass_marks));
     fd.append('status', quizData.status);
