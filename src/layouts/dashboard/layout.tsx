@@ -76,6 +76,10 @@ export function DashboardLayout({
         if ('children' in item && Array.isArray(item.children) && item.children.length === 0) {
           return false;
         }
+        const roles: string[] = Array.isArray(user.role) ? user.role : user.role ? [user.role] : [];
+        if ((item as any).role) {
+          return roles.includes((item as any).role);
+        }
         if (item.permission) {
           return user.all_permissions?.includes(item.permission);
         }

@@ -1,15 +1,15 @@
 import type { RouteObject } from 'react-router';
 
 import { lazy, Suspense } from 'react';
-import { Outlet } from 'react-router-dom';
 import { varAlpha } from 'minimal-shared/utils';
+import { Outlet, Navigate } from 'react-router-dom';
 
 import Box from '@mui/material/Box';
 import LinearProgress, { linearProgressClasses } from '@mui/material/LinearProgress';
 
 import { AuthLayout } from 'src/layouts/auth';
 import { DashboardLayout } from 'src/layouts/dashboard';
-import { AuthGuard, GuestGuard, RoleBasedGuard } from 'src/auth';
+import { useAuth, AuthGuard, GuestGuard, RoleBasedGuard } from 'src/auth';
 
 // ----------------------------------------------------------------------
 
@@ -37,6 +37,9 @@ export const QuizzesPage = lazy(() => import('src/pages/quizzes'));
 export const QuizCreatePage = lazy(() => import('src/pages/quiz-create'));
 export const QuizEditPage = lazy(() => import('src/pages/quiz-edit'));
 export const QuizOverviewPage = lazy(() => import('src/pages/quiz-overview'));
+export const StudentQuizzesPage = lazy(() => import('src/pages/student-quizzes'));
+export const StudentQuizTakePage = lazy(() => import('src/pages/student-quiz-take'));
+export const StudentQuizReviewPage = lazy(() => import('src/pages/student-quiz-review'));
 export const Page404 = lazy(() => import('src/pages/page-not-found'));
 
 const renderFallback = () => (
@@ -59,6 +62,19 @@ const renderFallback = () => (
   </Box>
 );
 
+function IndexRoute() {
+  const { user } = useAuth();
+  const roles: string[] = Array.isArray(user?.role) ? user.role : user?.role ? [user.role] : [];
+  if (roles.includes('Student')) {
+    return <Navigate to="/student/quizzes" replace />;
+  }
+  return (
+    <RoleBasedGuard permissions={['view_dashboard']}>
+      <DashboardPage />
+    </RoleBasedGuard>
+  );
+}
+
 export const routesSection: RouteObject[] = [
   {
     element: (
@@ -73,11 +89,7 @@ export const routesSection: RouteObject[] = [
     children: [
       {
         index: true,
-        element: (
-          <RoleBasedGuard permissions={['view_dashboard']}>
-            <DashboardPage />
-          </RoleBasedGuard>
-        ),
+        element: <IndexRoute />,
       },
       {
         path: 'user',
@@ -201,6 +213,18 @@ export const routesSection: RouteObject[] = [
             <QuizOverviewPage />
           </RoleBasedGuard>
         ),
+      },
+      {
+        path: 'student/quizzes',
+        element: <StudentQuizzesPage />,
+      },
+      {
+        path: 'student/quizzes/:id/take',
+        element: <StudentQuizTakePage />,
+      },
+      {
+        path: 'student/quiz-attempts/:attemptId/review',
+        element: <StudentQuizReviewPage />,
       },
     ],
   },

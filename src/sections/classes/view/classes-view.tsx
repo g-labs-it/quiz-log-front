@@ -38,6 +38,8 @@ import { DashboardContent } from 'src/layouts/dashboard';
 import { Iconify } from 'src/components/iconify';
 import { Scrollbar } from 'src/components/scrollbar';
 
+import { ClassStudentsDialog } from './class-students-dialog';
+
 // ----------------------------------------------------------------------
 
 const DAYS_OF_WEEK = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
@@ -102,6 +104,10 @@ export function ClassesView() {
   const [openFormModal, setOpenFormModal] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [selectedClass, setSelectedClass] = useState<ClassProps | null>(null);
+
+  // Students dialog
+  const [openStudentsModal, setOpenStudentsModal] = useState(false);
+  const [selectedClassForStudents, setSelectedClassForStudents] = useState<ClassProps | null>(null);
 
   // Delete dialog
   const [openDeleteModal, setOpenDeleteModal] = useState(false);
@@ -362,6 +368,24 @@ export function ClassesView() {
                     </TableCell>
                     <TableCell align="right">
                       <Stack direction="row" spacing={1} justifyContent="flex-end">
+                        <Tooltip title="Manage Students">
+                          <IconButton
+                            onClick={() => {
+                              setSelectedClassForStudents(row);
+                              setOpenStudentsModal(true);
+                            }}
+                            sx={{
+                              width: 36,
+                              height: 36,
+                              borderRadius: '10px',
+                              bgcolor: '#8e33ff',
+                              color: '#fff',
+                              '&:hover': { bgcolor: '#8e33ff', opacity: 0.9 },
+                            }}
+                          >
+                            <Iconify icon="solar:users-group-rounded-bold" width={20} />
+                          </IconButton>
+                        </Tooltip>
                         {canCreateQuiz && (
                           <Tooltip title="Create Quiz for this Class">
                             <IconButton
@@ -542,6 +566,16 @@ export function ClassesView() {
           </DialogActions>
         </Box>
       </Dialog>
+
+      {/* ─── Class Students Dialog ─── */}
+      <ClassStudentsDialog
+        open={openStudentsModal}
+        onClose={() => {
+          setOpenStudentsModal(false);
+          setSelectedClassForStudents(null);
+        }}
+        cls={selectedClassForStudents}
+      />
 
       {/* ─── Delete Confirmation Dialog ─── */}
       <Dialog

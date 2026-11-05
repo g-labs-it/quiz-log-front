@@ -36,8 +36,13 @@ export function SignInView() {
       setErrorMsg('');
 
       try {
-        await login({ email, password });
-        router.push('/');
+        const loggedUser = await login({ email, password });
+        const roles: string[] = Array.isArray(loggedUser?.role) ? loggedUser.role : loggedUser?.role ? [loggedUser.role] : [];
+        if (roles.includes('Student')) {
+          router.push('/student/quizzes');
+        } else {
+          router.push('/');
+        }
       } catch (err: any) {
         console.error(err);
         let message = 'Invalid email or password';
@@ -83,7 +88,7 @@ export function SignInView() {
       <TextField
         fullWidth
         name="email"
-        label="Email address"
+        label="Email or Student Code"
         value={email}
         onChange={(e) => setEmail(e.target.value)}
         required
