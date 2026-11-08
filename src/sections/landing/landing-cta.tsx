@@ -106,14 +106,16 @@ export function LandingCta({ onScrollToQuizzes }: Props) {
                   onClick={() => navigate(isStudent ? '/student/quizzes' : '/dashboard')}
                   startIcon={<Iconify icon="solar:widget-add-bold-duotone" />}
                   sx={{
-                    bgcolor: 'common.white',
-                    color: 'primary.darker',
-                    fontWeight: 800,
+                    bgcolor: '#FEE140',
+                    backgroundImage: 'linear-gradient(135deg, #FFE066 0%, #FEE140 100%)',
+                    color: '#07271E',
+                    fontWeight: 900,
                     fontSize: 16,
-                    borderRadius: 1.25,
-                    px: 4,
-                    py: 1.5,
-                    '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.9)' },
+                    borderRadius: '999px',
+                    px: 4.5,
+                    py: 1.6,
+                    boxShadow: '0 8px 24px rgba(254, 225, 64, 0.45)',
+                    '&:hover': { bgcolor: '#FFF', transform: 'translateY(-2px)' },
                   }}
                 >
                   Go to My Dashboard
@@ -125,14 +127,16 @@ export function LandingCta({ onScrollToQuizzes }: Props) {
                   onClick={() => navigate('/sign-up')}
                   startIcon={<Iconify icon="solar:user-plus-bold" />}
                   sx={{
-                    bgcolor: 'common.white',
-                    color: 'primary.darker',
-                    fontWeight: 800,
+                    bgcolor: '#FEE140',
+                    backgroundImage: 'linear-gradient(135deg, #FFE066 0%, #FEE140 100%)',
+                    color: '#07271E',
+                    fontWeight: 900,
                     fontSize: 16,
-                    borderRadius: 1.25,
-                    px: 4,
-                    py: 1.5,
-                    '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.9)' },
+                    borderRadius: '999px',
+                    px: 4.5,
+                    py: 1.6,
+                    boxShadow: '0 8px 24px rgba(254, 225, 64, 0.45)',
+                    '&:hover': { bgcolor: '#FFF', transform: 'translateY(-2px)' },
                   }}
                 >
                   Create Free Account
@@ -148,12 +152,12 @@ export function LandingCta({ onScrollToQuizzes }: Props) {
                   borderColor: 'rgba(255, 255, 255, 0.5)',
                   fontWeight: 700,
                   fontSize: 16,
-                  borderRadius: 1.25,
-                  px: 3.5,
-                  py: 1.5,
+                  borderRadius: '999px',
+                  px: 4,
+                  py: 1.6,
                   '&:hover': {
                     borderColor: 'common.white',
-                    bgcolor: 'rgba(255, 255, 255, 0.1)',
+                    bgcolor: 'rgba(255, 255, 255, 0.12)',
                   },
                 }}
               >

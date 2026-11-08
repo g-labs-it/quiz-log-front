@@ -1,17 +1,9 @@
-import { useNavigate } from 'react-router-dom';
-
 import Box from '@mui/material/Box';
-import Chip from '@mui/material/Chip';
 import Grid from '@mui/material/Grid';
-import Card from '@mui/material/Card';
 import Stack from '@mui/material/Stack';
 import Button from '@mui/material/Button';
 import Container from '@mui/material/Container';
-import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
-import InputAdornment from '@mui/material/InputAdornment';
-
-import { useAuth } from 'src/auth';
 
 import { Iconify } from 'src/components/iconify';
 
@@ -19,487 +11,463 @@ import { Iconify } from 'src/components/iconify';
 
 interface Props {
   onScrollToQuizzes?: () => void;
-  searchQuery?: string;
-  onSearchChange?: (val: string) => void;
+  onScrollToChampions?: () => void;
+  onScrollToHowItWorks?: () => void;
 }
 
-export function LandingHero({ onScrollToQuizzes, searchQuery = '', onSearchChange }: Props) {
-  const navigate = useNavigate();
-  const { isAuthenticated, user } = useAuth();
+/**
+ * Generates an exact Bauhaus concentric quarter-circle diagonal metaball bridge
+ * between two diagonally adjacent grid circles (x1, y1, r) and (x2, y2, r).
+ * Because rf = s - r, the bridge is 100% G1-tangent to both endpoint circles
+ * and 100% concentric with both neighboring off-diagonal circles.
+ */
+function createDiagonalBridge(
+  x1: number,
+  y1: number,
+  x2: number,
+  y2: number,
+  r: number
+): string {
+  const s = Math.abs(x2 - x1);
+  const rf = s - r;
 
-  const roles = (user as any)?.role || [];
-  const isStudent = Array.isArray(roles) && roles.includes('Student');
+  if (x2 > x1) {
+    // Down-right diagonal: (x1, y1) -> (x2, y2)
+    return [
+      `M ${x1 + r} ${y1}`,
+      `A ${rf} ${rf} 0 0 0 ${x2} ${y2 - r}`,
+      `L ${x2 - r} ${y2}`,
+      `A ${rf} ${rf} 0 0 0 ${x1} ${y1 + r}`,
+      'Z',
+    ].join(' ');
+  }
+
+  // Down-left diagonal: (x1, y1) -> (x2, y2)
+  return [
+    `M ${x1} ${y1 + r}`,
+    `A ${rf} ${rf} 0 0 0 ${x2 + r} ${y2}`,
+    `L ${x2} ${y2 - r}`,
+    `A ${rf} ${rf} 0 0 0 ${x1 - r} ${y1}`,
+    'Z',
+  ].join(' ');
+}
+
+export function LandingHero({ onScrollToQuizzes, onScrollToHowItWorks }: Props) {
+  // 4x4 Grid with constant step S = 90 and circle radius RAD = 43.4 (gap = 3.2px, rf = 46.6px)
+  const S = 90;
+  const H = S / 2; // 45px exact half-step for Column 4 tangent envelope
+  const C = [52, 52 + S, 52 + S * 2, 52 + S * 3 + 1.6]; // [52, 142, 232, 323.6]
+  const R = [52, 52 + S, 52 + S * 2, 52 + S * 3]; // [52, 142, 232, 322]
+  const RAD = 43.4;
+  const COL4_INNER_RAD = 42.0; // Leaves a 3.0px cream border inside the H=45 mask
+
+  // The 4 exact diagonal metaball bridges from the reference artwork
+  const yellowDiag = createDiagonalBridge(C[0], R[0], C[1], R[1], RAD);
+  const bluePurpleDiag = createDiagonalBridge(C[2], R[1], C[1], R[2], RAD);
+  const purpleLeftDiag = createDiagonalBridge(C[0], R[2], C[1], R[3], RAD);
+  const purpleRightDiag = createDiagonalBridge(C[2], R[2], C[1], R[3], RAD);
 
   return (
     <Box
       sx={{
         position: 'relative',
+        bgcolor: '#F5F4EB',
+        pt: { xs: 13, sm: 15, md: 17 },
+        pb: { xs: 8, md: 11 },
         overflow: 'hidden',
-        pt: { xs: 15, md: 18 },
-        pb: { xs: 8, md: 12 },
-        background: (theme) =>
-          `radial-gradient(ellipse at 80% 20%, ${theme.vars.palette.primary.lighter} 0%, rgba(255,255,255,0) 65%),
-           radial-gradient(ellipse at 20% 60%, rgba(0, 167, 111, 0.08) 0%, rgba(255,255,255,0) 50%)`,
       }}
     >
-      {/* Decorative Floating Ambient Orbs */}
-      <Box
-        sx={{
-          position: 'absolute',
-          top: -120,
-          right: -100,
-          width: 480,
-          height: 480,
-          borderRadius: '50%',
-          background: 'linear-gradient(135deg, rgba(0, 167, 111, 0.18), rgba(91, 228, 155, 0.12))',
-          filter: 'blur(90px)',
-          pointerEvents: 'none',
-          zIndex: 0,
-        }}
-      />
-      <Box
-        sx={{
-          position: 'absolute',
-          bottom: -80,
-          left: -120,
-          width: 420,
-          height: 420,
-          borderRadius: '50%',
-          background: 'linear-gradient(135deg, rgba(0, 167, 111, 0.12), rgba(0, 120, 103, 0.08))',
-          filter: 'blur(80px)',
-          pointerEvents: 'none',
-          zIndex: 0,
-        }}
-      />
-
-      <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 1 }}>
+      <Container maxWidth="lg">
         <Grid container spacing={{ xs: 6, md: 4 }} alignItems="center">
-          {/* Left Column: Headline & CTA */}
-          <Grid size={{ xs: 12, md: 7 }}>
-            <Stack spacing={3} sx={{ textAlign: { xs: 'center', md: 'left' } }}>
-              {/* Badge Pill */}
-              <Box sx={{ display: 'inline-flex', justifyContent: { xs: 'center', md: 'flex-start' } }}>
-                <Chip
-                  icon={<Iconify icon="solar:stars-bold" width={18} color="primary.main" />}
-                  label="The Smart Exam & MCQ Practice Platform"
-                  size="medium"
-                  sx={{
-                    px: 1,
-                    py: 0.5,
-                    fontWeight: 700,
-                    borderRadius: 1,
-                    bgcolor: 'primary.lighter',
-                    color: 'primary.darker',
-                    fontSize: 13,
-                    border: '1px solid',
-                    borderColor: 'primary.light',
-                  }}
-                />
-              </Box>
-
-              {/* Headline */}
+          {/* LEFT COLUMN: Bold 4-Line Typography, Subtitle, Paper Plane & CTA Buttons */}
+          <Grid size={{ xs: 12, md: 6.3 }}>
+            <Box sx={{ position: 'relative' }}>
               <Typography
-                variant="h1"
+                component="h1"
                 sx={{
-                  fontWeight: 900,
-                  fontSize: { xs: '2.5rem', sm: '3.25rem', md: '3.75rem' },
-                  lineHeight: 1.15,
-                  letterSpacing: -1,
-                  color: 'text.primary',
+                  fontFamily: '"Plus Jakarta Sans", "DM Sans Variable", sans-serif',
+                  fontWeight: 800,
+                  fontSize: { xs: '3rem', sm: '4.1rem', md: '4.75rem' },
+                  lineHeight: 1.03,
+                  letterSpacing: '-0.035em',
+                  color: '#0A0A0A',
+                  mb: { xs: 3, md: 4 },
                 }}
               >
-                Ace Your Exams with{' '}
+                Developing
+                <br />
+                Outstand-
+                <br />
+                Ing Exam
+                <br />
+                Mastery!
+              </Typography>
+
+              {/* Subtitle + Hand-drawn Paper Plane with Dashed Loop */}
+              <Box
+                sx={{
+                  position: 'relative',
+                  maxWidth: 430,
+                  mb: { xs: 4.5, md: 6 },
+                }}
+              >
+                <Typography
+                  sx={{
+                    fontFamily: '"Plus Jakarta Sans", "DM Sans Variable", sans-serif',
+                    fontSize: { xs: '15px', sm: '16.5px' },
+                    fontWeight: 500,
+                    color: '#14142B',
+                    lineHeight: 1.65,
+                  }}
+                >
+                  Trusted by over 15,000 students and millions of learners
+                  <br />
+                  around the world
+                </Typography>
+
+                {/* Paper Plane + Dashed Loop */}
                 <Box
-                  component="span"
                   sx={{
-                    background: (theme) =>
-                      `linear-gradient(135deg, ${theme.vars.palette.primary.main} 0%, #007867 100%)`,
-                    WebkitBackgroundClip: 'text',
-                    WebkitTextFillColor: 'transparent',
+                    display: { xs: 'none', sm: 'block' },
+                    position: 'absolute',
+                    right: { sm: -115, md: -125 },
+                    bottom: -22,
+                    width: 115,
+                    height: 56,
+                    pointerEvents: 'none',
                   }}
                 >
-                  mcqpro
+                  <svg
+                    width="100%"
+                    height="100%"
+                    viewBox="0 0 120 60"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M4 8 L38 15 L23 23 L19 37 L4 8 Z"
+                      stroke="#14142B"
+                      strokeWidth="1.7"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                    <path
+                      d="M4 8 L23 23"
+                      stroke="#14142B"
+                      strokeWidth="1.7"
+                      strokeLinecap="round"
+                    />
+                    <path
+                      d="M19 37 L26 26"
+                      stroke="#14142B"
+                      strokeWidth="1.7"
+                      strokeLinecap="round"
+                    />
+                    <path
+                      d="M34 27 C 52 44, 92 46, 94 28 C 95 16, 78 16, 80 28 C 82 40, 108 38, 114 14"
+                      stroke="#14142B"
+                      strokeWidth="1.7"
+                      strokeLinecap="round"
+                      strokeDasharray="4 4.5"
+                    />
+                  </svg>
                 </Box>
-              </Typography>
-
-              {/* Sub-headline */}
-              <Typography
-                variant="body1"
-                sx={{
-                  fontSize: { xs: 16, md: 19 },
-                  color: 'text.secondary',
-                  lineHeight: 1.6,
-                  maxWidth: 580,
-                  mx: { xs: 'auto', md: 0 },
-                }}
-              >
-                Practice thousands of verified multiple-choice questions with real-time countdown
-                timers, simulated exam conditions, and instant step-by-step explanations.
-              </Typography>
-
-              {/* Search Bar or Quick CTA */}
-              <Box sx={{ maxWidth: 520, mx: { xs: 'auto', md: 0 }, width: 1 }}>
-                <TextField
-                  fullWidth
-                  placeholder="Search quizzes by topic (e.g. Science, Biology, ICT)..."
-                  value={searchQuery}
-                  onChange={(e) => onSearchChange?.(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') onScrollToQuizzes?.();
-                  }}
-                  slotProps={{
-                    input: {
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <Iconify icon="solar:magnifer-linear" width={22} sx={{ color: 'primary.main' }} />
-                        </InputAdornment>
-                      ),
-                      endAdornment: (
-                        <InputAdornment position="end">
-                          <Button
-                            variant="contained"
-                            color="primary"
-                            size="small"
-                            onClick={onScrollToQuizzes}
-                            sx={{ borderRadius: 1, px: 2, fontWeight: 700 }}
-                          >
-                            Explore
-                          </Button>
-                        </InputAdornment>
-                      ),
-                    },
-                  }}
-                  sx={{
-                    bgcolor: 'background.paper',
-                    borderRadius: 1.5,
-                    boxShadow: '0 8px 24px rgba(0, 0, 0, 0.08)',
-                    '& .MuiOutlinedInput-root': {
-                      borderRadius: 1.5,
-                      pr: 1,
-                    },
-                  }}
-                />
               </Box>
 
-              {/* Buttons */}
+              {/* CTA Pill Buttons */}
               <Stack
-                direction={{ xs: 'column', sm: 'row' }}
+                direction="row"
                 spacing={2}
-                sx={{ justifyContent: { xs: 'center', md: 'flex-start' } }}
+                alignItems="center"
+                flexWrap="wrap"
+                sx={{ rowGap: 1.5 }}
               >
+                {/* Primary Black Pill with White Circle Arrow */}
                 <Button
-                  size="large"
-                  variant="contained"
-                  color="primary"
                   onClick={onScrollToQuizzes}
-                  startIcon={<Iconify icon="solar:play-circle-bold" width={24} />}
                   sx={{
-                    py: 1.5,
-                    px: 3.5,
-                    fontSize: 16,
-                    fontWeight: 700,
-                    borderRadius: 1.25,
-                    boxShadow: (theme) => `0 8px 20px -4px ${theme.vars.palette.primary.main}50`,
+                    bgcolor: '#0A0A0A',
+                    color: '#FFFFFF',
+                    borderRadius: '999px',
+                    pl: 3.5,
+                    pr: 0.85,
+                    py: 0.85,
+                    height: 58,
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 2.25,
+                    textTransform: 'none',
+                    fontFamily: '"Plus Jakarta Sans", "DM Sans Variable", sans-serif',
+                    fontWeight: 600,
+                    fontSize: '15px',
+                    boxShadow: 'none',
+                    transition: 'all 0.25s ease',
+                    '&:hover': {
+                      bgcolor: '#222222',
+                      transform: 'translateY(-2px)',
+                      boxShadow: '0 10px 24px rgba(0, 0, 0, 0.14)',
+                    },
                   }}
                 >
-                  Explore Public Quizzes
+                  <span>Start Free Trial</span>
+                  <Box
+                    sx={{
+                      width: 44,
+                      height: 44,
+                      borderRadius: '50%',
+                      bgcolor: '#FFFFFF',
+                      color: '#0A0A0A',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      flexShrink: 0,
+                    }}
+                  >
+                    <Iconify icon="solar:arrow-right-linear" width={20} />
+                  </Box>
                 </Button>
 
-                {isAuthenticated ? (
-                  <Button
-                    size="large"
-                    variant="outlined"
-                    color="inherit"
-                    onClick={() => navigate(isStudent ? '/student/quizzes' : '/dashboard')}
-                    startIcon={<Iconify icon="solar:widget-add-bold-duotone" width={20} />}
-                    sx={{ py: 1.5, px: 3, fontWeight: 600, borderRadius: 1.25 }}
-                  >
-                    My Dashboard
-                  </Button>
-                ) : (
-                  <Button
-                    size="large"
-                    variant="outlined"
-                    color="inherit"
-                    onClick={() => navigate('/sign-up')}
-                    startIcon={<Iconify icon="solar:user-bold-duotone" width={20} />}
-                    sx={{ py: 1.5, px: 3, fontWeight: 600, borderRadius: 1.25 }}
-                  >
-                    Create Free Account
-                  </Button>
-                )}
+                {/* Secondary Outlined Pill Button */}
+                <Button
+                  variant="outlined"
+                  onClick={onScrollToHowItWorks}
+                  sx={{
+                    border: '1px solid #9A9A92',
+                    borderRadius: '999px',
+                    px: 4.75,
+                    height: 58,
+                    color: '#0A0A0A',
+                    bgcolor: 'transparent',
+                    textTransform: 'none',
+                    fontFamily: '"Plus Jakarta Sans", "DM Sans Variable", sans-serif',
+                    fontWeight: 600,
+                    fontSize: '15px',
+                    transition: 'all 0.25s ease',
+                    '&:hover': {
+                      borderColor: '#0A0A0A',
+                      bgcolor: 'rgba(10, 10, 10, 0.04)',
+                      transform: 'translateY(-2px)',
+                    },
+                  }}
+                >
+                  Learn More
+                </Button>
               </Stack>
-
-              {/* Key Trust Highlights */}
-              <Stack
-                direction={{ xs: 'column', sm: 'row' }}
-                spacing={{ xs: 2, sm: 4 }}
-                sx={{
-                  pt: 2,
-                  justifyContent: { xs: 'center', md: 'flex-start' },
-                  alignItems: 'center',
-                }}
-              >
-                <Stack direction="row" spacing={1} alignItems="center">
-                  <Iconify icon="solar:check-circle-bold" width={20} color="success.main" />
-                  <Typography variant="body2" sx={{ fontWeight: 600, color: 'text.secondary' }}>
-                    100% Free Public Quizzes
-                  </Typography>
-                </Stack>
-                <Stack direction="row" spacing={1} alignItems="center">
-                  <Iconify icon="solar:stopwatch-bold" width={20} color="primary.main" />
-                  <Typography variant="body2" sx={{ fontWeight: 600, color: 'text.secondary' }}>
-                    Real-time Timed Tests
-                  </Typography>
-                </Stack>
-                <Stack direction="row" spacing={1} alignItems="center">
-                  <Iconify icon="solar:lightbulb-bold" width={20} color="warning.main" />
-                  <Typography variant="body2" sx={{ fontWeight: 600, color: 'text.secondary' }}>
-                    Instant Explanations
-                  </Typography>
-                </Stack>
-              </Stack>
-            </Stack>
+            </Box>
           </Grid>
 
-          {/* Right Column: Interactive Quiz Mockup Card */}
-          <Grid size={{ xs: 12, md: 5 }}>
-            <Box sx={{ position: 'relative', mx: 'auto', maxWidth: 440 }}>
-              {/* Floating Passed Badge */}
-              <Card
-                sx={{
-                  position: 'absolute',
-                  top: -20,
-                  right: -12,
-                  zIndex: 2,
-                  p: 1.5,
-                  borderRadius: 1.5,
-                  boxShadow: '0 12px 28px rgba(0, 167, 111, 0.25)',
-                  bgcolor: 'background.paper',
-                  border: '1px solid',
-                  borderColor: 'success.light',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 1.25,
-                }}
+          {/* RIGHT COLUMN: Precision 4x4 Bauhaus Metaball & Portrait Grid */}
+          <Grid size={{ xs: 12, md: 5.7 }}>
+            <Box
+              sx={{
+                width: '100%',
+                maxWidth: { xs: 360, sm: 425, md: 455 },
+                mx: 'auto',
+                ml: { md: 'auto' },
+                mr: { md: 0 },
+              }}
+            >
+              <svg
+                width="100%"
+                height="100%"
+                viewBox="0 0 374 374"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                style={{ display: 'block', overflow: 'visible' }}
               >
-                <Box
-                  sx={{
-                    width: 36,
-                    height: 36,
-                    borderRadius: 1,
-                    bgcolor: 'success.lighter',
-                    color: 'success.main',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  }}
-                >
-                  <Iconify icon="solar:cup-star-bold" width={22} />
-                </Box>
-                <Box>
-                  <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600 }}>
-                    Latest Result
-                  </Typography>
-                  <Typography variant="subtitle2" sx={{ fontWeight: 800, color: 'success.darker' }}>
-                    100% Passed • Grade A
-                  </Typography>
-                </Box>
-              </Card>
+                <defs>
+                  {/* Blue-to-Purple Diagonal Gradient */}
+                  <linearGradient
+                    id="gradBluePurple"
+                    x1={C[2]}
+                    y1={R[1]}
+                    x2={C[1]}
+                    y2={R[2]}
+                    gradientUnits="userSpaceOnUse"
+                  >
+                    <stop offset="0%" stopColor="#4361F2" />
+                    <stop offset="45%" stopColor="#6559F7" />
+                    <stop offset="100%" stopColor="#8E54FF" />
+                  </linearGradient>
 
-              {/* Main Quiz Mockup Card */}
-              <Card
-                sx={{
-                  p: 3,
-                  borderRadius: 2,
-                  boxShadow: '0 20px 48px rgba(0, 0, 0, 0.12)',
-                  border: '1px solid',
-                  borderColor: 'divider',
-                  bgcolor: 'background.paper',
-                  transition: 'transform 0.3s ease',
-                  '&:hover': {
-                    transform: 'translateY(-4px)',
-                  },
-                }}
-              >
-                {/* Mockup Header */}
-                <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2.5 }}>
-                  <Stack direction="row" spacing={1} alignItems="center">
-                    <Chip
-                      label="Question 1 of 5"
-                      size="small"
-                      sx={{
-                        borderRadius: 1,
-                        bgcolor: 'primary.lighter',
-                        color: 'primary.darker',
-                        fontWeight: 700,
-                        fontSize: '0.75rem',
-                      }}
+                  {/* Soft 3D Radial Highlight for Center Purple Circle (C1, R2) */}
+                  <radialGradient
+                    id="gradCenterPurple"
+                    cx={C[1]}
+                    cy={R[2]}
+                    r={RAD}
+                    gradientUnits="userSpaceOnUse"
+                  >
+                    <stop offset="0%" stopColor="#7546FF" />
+                    <stop offset="65%" stopColor="#8F55FF" />
+                    <stop offset="100%" stopColor="#9C5AFF" />
+                  </radialGradient>
+
+                  {/* Soft Shadow for Row 3 Col 4 White Circle */}
+                  <filter id="whiteCircleShadow" x="-25%" y="-25%" width="160%" height="160%">
+                    <feDropShadow
+                      dx="3.5"
+                      dy="2"
+                      stdDeviation="3.5"
+                      floodColor="#011738"
+                      floodOpacity="0.22"
                     />
-                    <Chip
-                      label="2.0 Marks"
-                      size="small"
-                      variant="outlined"
-                      sx={{ borderRadius: 1, fontSize: '0.75rem' }}
-                    />
-                  </Stack>
-                  <Chip
-                    icon={<Iconify icon="solar:clock-circle-bold" width={16} />}
-                    label="28:45"
-                    size="small"
-                    sx={{
-                      borderRadius: 1,
-                      fontWeight: 700,
-                      bgcolor: 'warning.lighter',
-                      color: 'warning.darker',
-                      border: '1px solid',
-                      borderColor: 'warning.light',
-                    }}
+                  </filter>
+
+                  {/* Exact Circular Clip Paths for the 4 Medallions */}
+                  <clipPath id="clipTrophy">
+                    <circle cx={C[2]} cy={R[0]} r={RAD} />
+                  </clipPath>
+                  <clipPath id="clipCoralStudent">
+                    <circle cx={C[3]} cy={R[0]} r={COL4_INNER_RAD} />
+                  </clipPath>
+                  <clipPath id="clipPinkStudent">
+                    <circle cx={C[0]} cy={R[1]} r={RAD} />
+                  </clipPath>
+                  <clipPath id="clipGreenStudent">
+                    <circle cx={C[2]} cy={R[3]} r={RAD} />
+                  </clipPath>
+                </defs>
+
+                {/* =========================================================
+                    1. COLUMN 4 DARK NAVY S-STEP STRUCTURE (Exact H = S/2 = 45px Tangent Envelope)
+                       - R0..R1: Full width [C3 - H, C3 + H]
+                       - R1..R2: Right half [C3, C3 + H]
+                       - R2..R3: Left half [C3 - H, C3] + Bottom Circle (C3, R3)
+                   ========================================================= */}
+                <g fill="#011738">
+                  <rect x={C[3] - H} y={R[0]} width={H * 2} height={S} />
+                  <rect x={C[3]} y={R[1]} width={H} height={S} />
+                  <rect x={C[3] - H} y={R[2]} width={H} height={S} />
+                  <circle cx={C[3]} cy={R[3]} r={H} />
+                </g>
+
+                {/* =========================================================
+                    2. YELLOW CLUSTER: Diagonal Bridge (C0,R0)<->(C1,R1) + 3 Circles
+                   ========================================================= */}
+                <g fill="#FDC745">
+                  <path d={yellowDiag} />
+                  <circle cx={C[0]} cy={R[0]} r={RAD} />
+                  <circle cx={C[1]} cy={R[0]} r={RAD} />
+                  <circle cx={C[1]} cy={R[1]} r={RAD} />
+                </g>
+
+                {/* =========================================================
+                    3. PURPLE & BLUE DIAGONAL BRIDGES + CIRCLES
+                   ========================================================= */}
+                <path d={bluePurpleDiag} fill="url(#gradBluePurple)" />
+
+                <g fill="#9C5AFF">
+                  <path d={purpleLeftDiag} />
+                  <path d={purpleRightDiag} />
+                  <circle cx={C[0]} cy={R[2]} r={RAD} />
+                  <circle cx={C[2]} cy={R[2]} r={RAD} />
+                  <circle cx={C[1]} cy={R[3]} r={RAD} />
+                </g>
+
+                {/* Center Purple Circle (C1, R2) with Soft 3D Radial Highlight */}
+                <circle cx={C[1]} cy={R[2]} r={RAD} fill="url(#gradCenterPurple)" />
+
+                {/* =========================================================
+                    4. TARGET & RING CIRCLES
+                   ========================================================= */}
+                {/* (C2, R1) Royal Blue Target Ring */}
+                <g>
+                  <circle cx={C[2]} cy={R[1]} r={RAD} fill="#4361F2" />
+                  <circle cx={C[2]} cy={R[1]} r={30} fill="#FFFFFF" />
+                  <circle cx={C[2]} cy={R[1]} r={14.5} fill="#3955E6" />
+                </g>
+
+                {/* (C0, R3) Bottom-Left Royal Blue Bullseye */}
+                <g>
+                  <circle cx={C[0]} cy={R[3]} r={RAD} fill="#4361F2" />
+                  <circle cx={C[0]} cy={R[3]} r={35.5} fill="#FFFFFF" />
+                  <circle cx={C[0]} cy={R[3]} r={16.5} fill="#2A45D4" />
+                </g>
+
+                {/* (C3, R1) Sky Blue Circle with Thin White Inner Ring */}
+                <g>
+                  <circle cx={C[3]} cy={R[1]} r={H} fill="#F5F4EB" />
+                  <circle cx={C[3]} cy={R[1]} r={COL4_INNER_RAD} fill="#3BB8EC" />
+                  <circle
+                    cx={C[3]}
+                    cy={R[1]}
+                    r={28}
+                    fill="none"
+                    stroke="#FFFFFF"
+                    strokeWidth="1.5"
                   />
-                </Stack>
+                </g>
 
-                {/* Mockup Question */}
-                <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 2.5, lineHeight: 1.4 }}>
-                  Which cellular organelle is responsible for generating the majority of chemical energy
-                  (ATP) in human cells?
-                </Typography>
+                {/* (C3, R2) White Circle with Soft Drop Shadow (Exact H = 45px Tangent Fit) */}
+                <circle
+                  cx={C[3]}
+                  cy={R[2]}
+                  r={H}
+                  fill="#FFFFFF"
+                  filter="url(#whiteCircleShadow)"
+                />
 
-                {/* Mockup Options */}
-                <Stack spacing={1.5} sx={{ mb: 3 }}>
-                  <Box
-                    sx={{
-                      p: 1.5,
-                      borderRadius: 1.25,
-                      border: '1.5px solid',
-                      borderColor: 'divider',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 1.5,
-                      bgcolor: 'background.neutral',
-                    }}
-                  >
-                    <Box
-                      sx={{
-                        width: 22,
-                        height: 22,
-                        borderRadius: '50%',
-                        border: '2px solid',
-                        borderColor: 'text.disabled',
-                      }}
-                    />
-                    <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                      Ribosome
-                    </Typography>
-                  </Box>
+                {/* =========================================================
+                    5. FOUR PORTRAIT & TROPHY MEDALLIONS (Halo-Free Over-Bleed)
+                   ========================================================= */}
+                {/* (C2, R0) Golden Trophy */}
+                <g>
+                  <circle cx={C[2]} cy={R[0]} r={RAD} fill="#011738" />
+                  <image
+                    href="/assets/images/hero/trophy.png"
+                    x={C[2] - RAD - 3.5}
+                    y={R[0] - RAD - 3.5}
+                    width={(RAD + 3.5) * 2}
+                    height={(RAD + 3.5) * 2}
+                    preserveAspectRatio="xMidYMid slice"
+                    clipPath="url(#clipTrophy)"
+                  />
+                </g>
 
-                  {/* Correct Option Highlight */}
-                  <Box
-                    sx={{
-                      p: 1.5,
-                      borderRadius: 1.25,
-                      border: '1.5px solid',
-                      borderColor: 'success.main',
-                      bgcolor: 'success.lighter',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                    }}
-                  >
-                    <Stack direction="row" spacing={1.5} alignItems="center">
-                      <Box
-                        sx={{
-                          width: 22,
-                          height: 22,
-                          borderRadius: '50%',
-                          bgcolor: 'success.main',
-                          color: '#FFFFFF',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                        }}
-                      >
-                        <Iconify icon="solar:check-read-bold" width={14} />
-                      </Box>
-                      <Typography variant="body2" sx={{ fontWeight: 700, color: 'success.darker' }}>
-                        Mitochondria (Correct)
-                      </Typography>
-                    </Stack>
-                    <Iconify icon="solar:check-circle-bold" width={20} color="success.main" />
-                  </Box>
+                {/* (C3, R0) Coral Student */}
+                <g>
+                  <circle cx={C[3]} cy={R[0]} r={H} fill="#F5F4EB" />
+                  <circle cx={C[3]} cy={R[0]} r={COL4_INNER_RAD} fill="#F4956A" />
+                  <image
+                    href="/assets/images/hero/student-coral.png"
+                    x={C[3] - RAD - 3.5}
+                    y={R[0] - RAD - 3.5}
+                    width={(RAD + 3.5) * 2}
+                    height={(RAD + 3.5) * 2}
+                    preserveAspectRatio="xMidYMid slice"
+                    clipPath="url(#clipCoralStudent)"
+                  />
+                </g>
 
-                  <Box
-                    sx={{
-                      p: 1.5,
-                      borderRadius: 1.25,
-                      border: '1.5px solid',
-                      borderColor: 'divider',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 1.5,
-                      bgcolor: 'background.neutral',
-                    }}
-                  >
-                    <Box
-                      sx={{
-                        width: 22,
-                        height: 22,
-                        borderRadius: '50%',
-                        border: '2px solid',
-                        borderColor: 'text.disabled',
-                      }}
-                    />
-                    <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                      Golgi apparatus
-                    </Typography>
-                  </Box>
-                </Stack>
+                {/* (C0, R1) Pink Student */}
+                <g>
+                  <circle cx={C[0]} cy={R[1]} r={RAD} fill="#F7ACCC" />
+                  <image
+                    href="/assets/images/hero/student-pink.png"
+                    x={C[0] - RAD - 3.5}
+                    y={R[1] - RAD - 3.5}
+                    width={(RAD + 3.5) * 2}
+                    height={(RAD + 3.5) * 2}
+                    preserveAspectRatio="xMidYMid slice"
+                    clipPath="url(#clipPinkStudent)"
+                  />
+                </g>
 
-                {/* Explanation Snippet */}
-                <Box
-                  sx={{
-                    p: 1.75,
-                    borderRadius: 1,
-                    bgcolor: 'background.neutral',
-                    borderLeft: '4px solid',
-                    borderColor: 'primary.main',
-                  }}
-                >
-                  <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 0.5 }}>
-                    <Iconify icon="solar:info-circle-bold" width={16} color="primary.main" />
-                    <Typography variant="caption" sx={{ fontWeight: 700, color: 'primary.dark' }}>
-                      Teacher Explanation:
-                    </Typography>
-                  </Stack>
-                  <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block', lineHeight: 1.4 }}>
-                    Mitochondria produce ATP through cellular respiration and oxidative phosphorylation,
-                    known as the powerhouse of the cell.
-                  </Typography>
-                </Box>
-              </Card>
-
-              {/* Floating Timer Badge */}
-              <Card
-                sx={{
-                  position: 'absolute',
-                  bottom: -16,
-                  left: -12,
-                  zIndex: 2,
-                  p: 1.25,
-                  borderRadius: 1.5,
-                  boxShadow: '0 10px 24px rgba(0, 0, 0, 0.1)',
-                  bgcolor: 'background.paper',
-                  border: '1px solid',
-                  borderColor: 'divider',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 1,
-                }}
-              >
-                <Iconify icon="solar:shield-check-bold" width={22} color="primary.main" />
-                <Typography variant="caption" sx={{ fontWeight: 700, color: 'text.primary' }}>
-                  Auto-Graded & Instant Keys
-                </Typography>
-              </Card>
+                {/* (C2, R3) Green Student */}
+                <g>
+                  <circle cx={C[2]} cy={R[3]} r={RAD} fill="#88E485" />
+                  <image
+                    href="/assets/images/hero/student-green.png"
+                    x={C[2] - RAD - 3.5}
+                    y={R[3] - RAD - 3.5}
+                    width={(RAD + 3.5) * 2}
+                    height={(RAD + 3.5) * 2}
+                    preserveAspectRatio="xMidYMid slice"
+                    clipPath="url(#clipGreenStudent)"
+                  />
+                </g>
+              </svg>
             </Box>
           </Grid>
         </Grid>
