@@ -63,6 +63,12 @@ export const navData = [
     permission: 'institue_management',
   },
   {
+    title: 'Teachers',
+    path: '/teachers',
+    icon: icon('ic-user'),
+    permission: 'teacher_management',
+  },
+  {
     title: 'Access Control',
     path: '/access-control',
     icon: icon('ic-lock'),

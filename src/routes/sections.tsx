@@ -31,6 +31,7 @@ export const InstituteEditPage = lazy(() => import('src/pages/institute-edit'));
 export const InstituteConfigurePage = lazy(() => import('src/pages/institute-configure'));
 export const InstituteOverviewPage = lazy(() => import('src/pages/institute-overview'));
 export const TeacherOverviewPage = lazy(() => import('src/pages/teacher-overview'));
+export const TeachersPage = lazy(() => import('src/pages/teachers'));
 export const ClassesPage = lazy(() => import('src/pages/classes'));
 export const SubjectsPage = lazy(() => import('src/pages/subjects'));
 export const QuizzesPage = lazy(() => import('src/pages/quizzes'));
@@ -163,6 +164,14 @@ export const routesSection: RouteObject[] = [
         element: (
           <RoleBasedGuard permissions={['view_class_management']}>
             <TeacherOverviewPage />
+          </RoleBasedGuard>
+        ),
+      },
+      {
+        path: 'teachers',
+        element: (
+          <RoleBasedGuard permissions={['view_teacher_management', 'teacher_management']}>
+            <TeachersPage />
           </RoleBasedGuard>
         ),
       },
