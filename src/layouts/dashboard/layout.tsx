@@ -98,9 +98,10 @@ export function DashboardLayout({
   });
   const [siteName, setSiteName] = useState(() => {
     if (typeof window !== 'undefined') {
-      return localStorage.getItem('siteName') || 'G Labs';
+      const stored = localStorage.getItem('siteName');
+      return stored && stored !== 'G Labs' && stored !== 'QuizMaster' ? stored : 'mcqpro';
     }
-    return 'G Labs';
+    return 'mcqpro';
   });
 
   useEffect(() => {

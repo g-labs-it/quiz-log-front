@@ -33,6 +33,7 @@ import { Scrollbar } from 'src/components/scrollbar';
 
 import { QuizTableHead } from '../quiz-table-head';
 import { QuizTableRow, type QuizItem } from '../quiz-table-row';
+import { QuizBulkImportDialog } from '../quiz-bulk-import-dialog';
 
 // ----------------------------------------------------------------------
 
@@ -63,6 +64,9 @@ export function QuizzesView() {
   const [openDeleteModal, setOpenDeleteModal] = useState(false);
   const [quizToDelete, setQuizToDelete] = useState<QuizItem | null>(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
+
+  // Bulk Import CSV Dialog state
+  const [openBulkModal, setOpenBulkModal] = useState(false);
 
   // Fetch classes for filter dropdown
   const fetchClasses = useCallback(async () => {
@@ -147,14 +151,24 @@ export function QuizzesView() {
         </Box>
 
         {canCreate && (
-          <Button
-            variant="contained"
-            color="primary"
-            startIcon={<Iconify icon="mingcute:add-line" />}
-            onClick={() => navigate('/quizzes/create')}
-          >
-            Create Quiz
-          </Button>
+          <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap' }}>
+            <Button
+              variant="outlined"
+              color="primary"
+              startIcon={<Iconify icon="solar:file-text-bold" />}
+              onClick={() => setOpenBulkModal(true)}
+            >
+              Bulk Import (CSV)
+            </Button>
+            <Button
+              variant="contained"
+              color="primary"
+              startIcon={<Iconify icon="mingcute:add-line" />}
+              onClick={() => navigate('/quizzes/create')}
+            >
+              Create Quiz
+            </Button>
+          </Box>
         )}
       </Box>
 
@@ -324,6 +338,17 @@ export function QuizzesView() {
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* Bulk Import Quizzes Dialog */}
+      <QuizBulkImportDialog
+        open={openBulkModal}
+        onClose={() => setOpenBulkModal(false)}
+        onSuccess={(count) => {
+          setSuccessMsg(`Successfully imported ${count} quiz${count !== 1 ? 'zes' : ''}!`);
+          fetchQuizzes();
+        }}
+        classesList={classesList}
+      />
     </DashboardContent>
   );
 }

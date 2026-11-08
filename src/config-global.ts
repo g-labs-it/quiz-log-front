@@ -28,7 +28,7 @@ export type ConfigValue = {
 };
 
 export const CONFIG: ConfigValue = {
-  appName: 'G Labs',
+  appName: 'mcqpro',
   appVersion: packageJson.version,
   apiUrl: getBaseURL(),
   storageUrl: getStorageURL(),

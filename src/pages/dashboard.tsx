@@ -10,9 +10,9 @@ export default function Page() {
       <title>{`Dashboard - ${CONFIG.appName}`}</title>
       <meta
         name="description"
-        content="The starting point for your next project with Minimal UI Kit, built on the newest version of Material-UI ©, ready to be customized to your style"
+        content="mcqpro - Modern Online Exam Center and Learning Management System dashboard"
       />
-      <meta name="keywords" content="react,material,kit,application,dashboard,admin,template" />
+      <meta name="keywords" content="mcqpro,exam,quiz,online test,learning management system,lms,education" />
 
       <DashboardView />
     </>

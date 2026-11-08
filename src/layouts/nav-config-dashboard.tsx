@@ -22,7 +22,7 @@ export type NavItem = {
 export const navData = [
   {
     title: 'Dashboard',
-    path: '/',
+    path: '/dashboard',
     icon: icon('ic-analytics'),
     roles: ['Super Admin', 'Admin', 'Manager', 'Institute Owner', 'Teacher', 'Student', 'User'],
   },

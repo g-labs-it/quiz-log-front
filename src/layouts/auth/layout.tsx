@@ -5,6 +5,7 @@ import { merge } from 'es-toolkit';
 import Box from '@mui/material/Box';
 import Link from '@mui/material/Link';
 import Alert from '@mui/material/Alert';
+import Typography from '@mui/material/Typography';
 
 import { RouterLink } from 'src/routes/components';
 
@@ -50,10 +51,18 @@ export function AuthLayout({
         </Alert>
       ),
       leftArea: (
-        <>
-          {/** @slot Logo */}
-          <Logo />
-        </>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25 }}>
+          <Logo sx={{ width: 36, height: 36 }} />
+          <Typography
+            variant="h6"
+            sx={{ fontWeight: 800, color: 'text.primary', letterSpacing: 0.5, display: 'flex', alignItems: 'center' }}
+          >
+            <Box component="span" sx={{ color: 'primary.main', fontWeight: 900 }}>
+              mcq
+            </Box>
+            pro
+          </Typography>
+        </Box>
       ),
       rightArea: (
         <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 1, sm: 1.5 } }}>

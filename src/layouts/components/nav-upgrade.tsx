@@ -46,7 +46,7 @@ export function NavUpgrade({ sx, ...other }: StackProps) {
 
       <Box
         component="img"
-        alt="Minimal dashboard"
+        alt="mcqpro dashboard"
         src="/assets/illustrations/illustration-dashboard.webp"
         sx={{ width: 200, my: 2 }}
       />

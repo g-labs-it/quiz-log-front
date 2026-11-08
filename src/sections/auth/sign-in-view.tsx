@@ -1,5 +1,5 @@
-import { Link as RouterLink } from 'react-router-dom';
 import { useState, useEffect, useCallback } from 'react';
+import { useSearchParams, Link as RouterLink } from 'react-router-dom';
 
 import Box from '@mui/material/Box';
 import Link from '@mui/material/Link';
@@ -23,6 +23,8 @@ import { Iconify } from 'src/components/iconify';
 
 export function SignInView() {
   const router = useRouter();
+  const [searchParams] = useSearchParams();
+  const redirectUrl = searchParams.get('redirect');
   const { login, loginWithGoogle, resendVerification } = useAuth();
 
   const [showPassword, setShowPassword] = useState(false);
@@ -54,10 +56,12 @@ export function SignInView() {
           : loggedUser?.role
           ? [loggedUser.role]
           : [];
-        if (roles.includes('Student') || roles.includes('User')) {
+        if (redirectUrl) {
+          router.push(redirectUrl);
+        } else if (roles.includes('Student') || roles.includes('User')) {
           router.push('/student/quizzes');
         } else {
-          router.push('/');
+          router.push('/dashboard');
         }
       } catch (err: any) {
         console.error('Google sign in error:', err);
@@ -66,7 +70,7 @@ export function SignInView() {
         setGoogleLoading(false);
       }
     },
-    [loginWithGoogle, router]
+    [loginWithGoogle, redirectUrl, router]
   );
 
   // Initialize Google Identity Services
@@ -117,8 +121,21 @@ export function SignInView() {
       setResendSuccess('');
 
       try {
-        await login({ email, password });
-        router.push('/');
+        const loggedUser = await login({ email, password });
+        if (redirectUrl) {
+          router.push(redirectUrl);
+          return;
+        }
+        const roles: string[] = Array.isArray(loggedUser?.role)
+          ? loggedUser.role
+          : loggedUser?.role
+          ? [loggedUser.role]
+          : [];
+        if (roles.includes('Student') || roles.includes('User')) {
+          router.push('/student/quizzes');
+        } else {
+          router.push('/dashboard');
+        }
       } catch (err: any) {
         console.error(err);
         let message = 'Invalid email or password';
@@ -146,7 +163,7 @@ export function SignInView() {
         setIsSubmitting(false);
       }
     },
-    [email, password, login, router]
+    [email, password, login, redirectUrl, router]
   );
 
   const handleResendVerification = async () => {

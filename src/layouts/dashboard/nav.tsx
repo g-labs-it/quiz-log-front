@@ -112,7 +112,7 @@ export function NavMobile({
 
 // ----------------------------------------------------------------------
 
-export function NavContent({ data, slots, workspaces, sx, siteName = 'G Labs' }: NavContentProps) {
+export function NavContent({ data, slots, workspaces, sx, siteName = 'mcqpro' }: NavContentProps) {
   const pathname = usePathname();
   const [openCollapse, setOpenCollapse] = useState<Record<string, boolean>>({});
 
@@ -120,18 +120,33 @@ export function NavContent({ data, slots, workspaces, sx, siteName = 'G Labs' }:
     setOpenCollapse((prev) => ({ ...prev, [title]: !prev[title] }));
   };
 
+  const isMcqPro = siteName.trim().toLowerCase() === 'mcqpro';
+
   return (
     <>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 3 }}>
         <Logo sx={{ width: 40, height: 40 }} />
         <Typography
           variant="h5"
-          sx={{ fontWeight: 800, color: 'common.white', letterSpacing: 0.5 }}
+          sx={{ fontWeight: 800, color: 'common.white', letterSpacing: 0.5, display: 'flex', alignItems: 'center' }}
         >
-          <Box component="span" sx={{ color: 'primary.main' }}>
-            {siteName.charAt(0)}
-          </Box>
-          {siteName.slice(1)}
+          {isMcqPro ? (
+            <>
+              <Box component="span" sx={{ color: 'primary.main', fontWeight: 900 }}>
+                mcq
+              </Box>
+              <Box component="span" sx={{ color: 'common.white', fontWeight: 800 }}>
+                pro
+              </Box>
+            </>
+          ) : (
+            <>
+              <Box component="span" sx={{ color: 'primary.main' }}>
+                {siteName.charAt(0)}
+              </Box>
+              {siteName.slice(1)}
+            </>
+          )}
         </Typography>
       </Box>
 

@@ -42,6 +42,7 @@ export const QuizOverviewPage = lazy(() => import('src/pages/quiz-overview'));
 export const StudentQuizzesPage = lazy(() => import('src/pages/student-quizzes'));
 export const StudentQuizTakePage = lazy(() => import('src/pages/student-quiz-take'));
 export const StudentQuizReviewPage = lazy(() => import('src/pages/student-quiz-review'));
+export const LandingPage = lazy(() => import('src/pages/landing'));
 export const Page404 = lazy(() => import('src/pages/page-not-found'));
 
 const renderFallback = () => (
@@ -64,11 +65,15 @@ const renderFallback = () => (
   </Box>
 );
 
-function IndexRoute() {
-  return <DashboardPage />;
-}
-
 export const routesSection: RouteObject[] = [
+  {
+    path: '/',
+    element: (
+      <Suspense fallback={renderFallback()}>
+        <LandingPage />
+      </Suspense>
+    ),
+  },
   {
     element: (
       <AuthGuard>
@@ -81,8 +86,8 @@ export const routesSection: RouteObject[] = [
     ),
     children: [
       {
-        index: true,
-        element: <IndexRoute />,
+        path: 'dashboard',
+        element: <DashboardPage />,
       },
       {
         path: 'user',

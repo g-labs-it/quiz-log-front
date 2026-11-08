@@ -29,6 +29,8 @@ import { DashboardContent } from 'src/layouts/dashboard';
 
 import { Iconify } from 'src/components/iconify';
 
+import { QuizBulkImportDialog } from '../quiz-bulk-import-dialog';
+
 // ----------------------------------------------------------------------
 
 type OptionType = {
@@ -306,6 +308,34 @@ export function QuizCreateEditView() {
       ],
     },
   ]);
+
+  const [openCsvImport, setOpenCsvImport] = useState(false);
+
+  // Append or load imported CSV questions
+  const handleImportQuestions = (importedQuestions: any[]) => {
+    const isSingleEmptyQuestion =
+      questions.length === 1 &&
+      !questions[0].question_text.trim() &&
+      questions[0].options.every((opt) => !opt.option_text.trim());
+
+    const formattedQuestions: QuestionType[] = importedQuestions.map((pq) => ({
+      question_text: pq.question_text || '',
+      explanation: pq.explanation || '',
+      marks: pq.marks || 1,
+      question_image: null,
+      options: (pq.options || []).map((opt: any) => ({
+        option_text: opt.option_text || '',
+        is_correct: Boolean(opt.is_correct),
+        option_image: null,
+      })),
+    }));
+
+    if (isSingleEmptyQuestion) {
+      setQuestions(formattedQuestions);
+    } else {
+      setQuestions((prev) => [...prev, ...formattedQuestions]);
+    }
+  };
 
   // Fetch dropdown data (Classes & Institutes safely via Promise.allSettled)
   const fetchData = useCallback(async () => {
@@ -1172,20 +1202,39 @@ export function QuizCreateEditView() {
               );
             })}
 
-            <Button
-              fullWidth
-              variant="outlined"
-              color="success"
-              size="large"
-              startIcon={<Iconify icon="mingcute:add-line" />}
-              onClick={handleAddQuestion}
-              sx={{ py: 2, borderStyle: 'dashed', borderWidth: 2, fontWeight: 'bold' }}
-            >
-              Add Question
-            </Button>
+            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+              <Button
+                fullWidth
+                variant="outlined"
+                color="success"
+                size="large"
+                startIcon={<Iconify icon="mingcute:add-line" />}
+                onClick={handleAddQuestion}
+                sx={{ py: 1.75, borderStyle: 'dashed', borderWidth: 2, fontWeight: 'bold' }}
+              >
+                Add Question
+              </Button>
+              <Button
+                fullWidth
+                variant="outlined"
+                color="primary"
+                size="large"
+                startIcon={<Iconify icon="solar:document-add-bold-duotone" />}
+                onClick={() => setOpenCsvImport(true)}
+                sx={{ py: 1.75, borderStyle: 'dashed', borderWidth: 2, fontWeight: 'bold' }}
+              >
+                Import Questions (CSV)
+              </Button>
+            </Stack>
           </Stack>
         </Grid>
       </Grid>
+
+      <QuizBulkImportDialog
+        open={openCsvImport}
+        onClose={() => setOpenCsvImport(false)}
+        onImportQuestions={handleImportQuestions}
+      />
     </DashboardContent>
   );
 }
