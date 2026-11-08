@@ -94,7 +94,7 @@ export function UserTableRow({
         </TableCell>
 
         <TableCell>
-          {row.role?.toLowerCase() === 'student' || row.student_code ? (
+          {row.student_code || row.username ? (
             <Box sx={{ display: 'flex', flexDirection: 'column' }}>
               <Box
                 component="span"
@@ -105,7 +105,7 @@ export function UserTableRow({
                   fontSize: '0.85rem',
                 }}
               >
-                {row.student_code || row.username || '—'}
+                {row.student_code || row.username}
               </Box>
               {row.email && (
                 <Box component="span" sx={{ typography: 'caption', color: 'text.secondary' }}>

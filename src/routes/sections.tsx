@@ -1,15 +1,15 @@
 import type { RouteObject } from 'react-router';
 
 import { lazy, Suspense } from 'react';
+import { Outlet } from 'react-router-dom';
 import { varAlpha } from 'minimal-shared/utils';
-import { Outlet, Navigate } from 'react-router-dom';
 
 import Box from '@mui/material/Box';
 import LinearProgress, { linearProgressClasses } from '@mui/material/LinearProgress';
 
 import { AuthLayout } from 'src/layouts/auth';
 import { DashboardLayout } from 'src/layouts/dashboard';
-import { useAuth, AuthGuard, GuestGuard, RoleBasedGuard } from 'src/auth';
+import { AuthGuard, GuestGuard, RoleBasedGuard } from 'src/auth';
 
 // ----------------------------------------------------------------------
 
@@ -20,6 +20,7 @@ export const SignInPage = lazy(() => import('src/pages/sign-in'));
 export const SignUpPage = lazy(() => import('src/pages/sign-up'));
 export const ForgotPasswordPage = lazy(() => import('src/pages/forgot-password'));
 export const ResetPasswordPage = lazy(() => import('src/pages/reset-password'));
+export const VerifyEmailPage = lazy(() => import('src/pages/verify-email'));
 export const ProfilePage = lazy(() => import('src/pages/profile'));
 export const ProductsPage = lazy(() => import('src/pages/products'));
 export const SettingsPage = lazy(() => import('src/pages/settings'));
@@ -64,20 +65,7 @@ const renderFallback = () => (
 );
 
 function IndexRoute() {
-  const { user } = useAuth();
-  const roles: string[] = Array.isArray(user?.role) ? user.role : user?.role ? [user.role] : [];
-  if (
-    roles.includes('Student') ||
-    (roles.includes('User') &&
-      !roles.some((r) => ['Super Admin', 'Admin', 'Manager', 'Institute Owner', 'Teacher'].includes(r)))
-  ) {
-    return <Navigate to="/student/quizzes" replace />;
-  }
-  return (
-    <RoleBasedGuard permissions={['view_dashboard']}>
-      <DashboardPage />
-    </RoleBasedGuard>
-  );
+  return <DashboardPage />;
 }
 
 export const routesSection: RouteObject[] = [
@@ -277,6 +265,16 @@ export const routesSection: RouteObject[] = [
       <GuestGuard>
         <AuthLayout>
           <ResetPasswordPage />
+        </AuthLayout>
+      </GuestGuard>
+    ),
+  },
+  {
+    path: 'verify-email',
+    element: (
+      <GuestGuard>
+        <AuthLayout>
+          <VerifyEmailPage />
         </AuthLayout>
       </GuestGuard>
     ),

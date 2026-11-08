@@ -24,7 +24,7 @@ export const navData = [
     title: 'Dashboard',
     path: '/',
     icon: icon('ic-analytics'),
-    permission: 'view_dashboard',
+    roles: ['Super Admin', 'Admin', 'Manager', 'Institute Owner', 'Teacher', 'Student', 'User'],
   },
   {
     title: 'My Quizzes',

@@ -32,18 +32,19 @@ interface StudentQuiz {
   total_marks: string | number;
   pass_marks: string | number;
   questions_count: number;
-  class: {
-    id: number;
-    name: string;
-  };
-  institute: {
-    id: number;
-    name: string;
-  };
-  teacher: {
-    id: number;
-    name: string;
-  };
+  is_public?: boolean;
+  class?: {
+    id?: number;
+    name?: string;
+  } | null;
+  institute?: {
+    id?: number;
+    name?: string;
+  } | null;
+  teacher?: {
+    id?: number;
+    name?: string;
+  } | null;
   attempt?: {
     id: number;
     status: 'IN_PROGRESS' | 'COMPLETED';
@@ -185,13 +186,18 @@ export function StudentQuizzesView() {
                     }}
                   >
                     {/* Header info */}
-                    <Stack direction="row" justifyContent="space-between" alignItems="flex-start" sx={{ mb: 2 }}>
+                    <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2 }}>
                       <Chip
                         label={quiz.class?.name || 'Public Quiz'}
                         size="small"
                         color={quiz.class?.name ? 'primary' : 'secondary'}
                         variant="outlined"
-                        sx={{ fontWeight: 600 }}
+                        sx={{
+                          borderRadius: 0.75,
+                          fontWeight: 600,
+                          fontSize: '0.75rem',
+                          height: 24,
+                        }}
                       />
                       {isCompleted ? (
                         <Chip
@@ -199,28 +205,58 @@ export function StudentQuizzesView() {
                           size="small"
                           color={attempt.is_passed ? 'success' : 'error'}
                           variant="filled"
+                          sx={{
+                            borderRadius: 0.75,
+                            fontWeight: 700,
+                            fontSize: '0.75rem',
+                            height: 24,
+                          }}
                         />
                       ) : isInProgress ? (
-                        <Chip label="In Progress" size="small" color="warning" variant="filled" />
+                        <Chip
+                          label="In Progress"
+                          size="small"
+                          color="warning"
+                          variant="filled"
+                          sx={{
+                            borderRadius: 0.75,
+                            fontWeight: 700,
+                            fontSize: '0.75rem',
+                            height: 24,
+                          }}
+                        />
                       ) : (
-                        <Chip label="Available" size="small" color="default" variant="outlined" />
+                        <Chip
+                          label="Available"
+                          size="small"
+                          color="default"
+                          variant="outlined"
+                          sx={{
+                            borderRadius: 0.75,
+                            fontWeight: 600,
+                            fontSize: '0.75rem',
+                            height: 24,
+                          }}
+                        />
                       )}
                     </Stack>
 
-                    {quiz.image && (
-                      <Box
-                        component="img"
-                        src={getImageUrl(quiz.image)}
-                        alt={quiz.title}
-                        sx={{
-                          width: '100%',
-                          height: 140,
-                          borderRadius: 1.5,
-                          objectFit: 'cover',
-                          mb: 2,
-                        }}
-                      />
-                    )}
+                    <Box
+                      component="img"
+                      src={
+                        quiz.image
+                          ? getImageUrl(quiz.image)
+                          : `/assets/images/cover/cover-${((quiz.id || 0) % 24) + 1}.webp`
+                      }
+                      alt={quiz.title}
+                      sx={{
+                        width: '100%',
+                        height: 140,
+                        borderRadius: 1.5,
+                        objectFit: 'cover',
+                        mb: 2,
+                      }}
+                    />
 
                     {/* Title & description */}
                     <Typography variant="h6" sx={{ mb: 1, fontWeight: 700 }}>
@@ -268,12 +304,15 @@ export function StudentQuizzesView() {
                         </Typography>
                       </Stack>
 
-                      <Stack direction="row" alignItems="center" spacing={1}>
-                        <Iconify icon="solar:user-bold" width={16} color="text.secondary" />
-                        <Typography variant="caption" color="text.secondary">
-                          Teacher: <strong>{quiz.teacher?.name || 'Instructor'}</strong>
-                        </Typography>
-                      </Stack>
+                      {/* Hide Teacher for public quizzes */}
+                      {!quiz.is_public && Boolean(quiz.class?.name) && (
+                        <Stack direction="row" alignItems="center" spacing={1}>
+                          <Iconify icon="solar:user-bold" width={16} color="text.secondary" />
+                          <Typography variant="caption" color="text.secondary">
+                            Teacher: <strong>{quiz.teacher?.name || 'Instructor'}</strong>
+                          </Typography>
+                        </Stack>
+                      )}
                     </Stack>
 
                     {/* Action button */}

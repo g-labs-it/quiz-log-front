@@ -11,11 +11,14 @@ import Grid from '@mui/material/Grid';
 import Stack from '@mui/material/Stack';
 import Alert from '@mui/material/Alert';
 import Button from '@mui/material/Button';
+import Dialog from '@mui/material/Dialog';
 import Avatar from '@mui/material/Avatar';
 import Tooltip from '@mui/material/Tooltip';
 import Divider from '@mui/material/Divider';
 import { useTheme } from '@mui/material/styles';
+import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
+import DialogContent from '@mui/material/DialogContent';
 import CircularProgress from '@mui/material/CircularProgress';
 
 import axiosInstance from 'src/utils/axios';
@@ -78,6 +81,7 @@ export function StudentQuizReviewView() {
   const [errorMsg, setErrorMsg] = useState('');
   const [data, setData] = useState<ReviewData | null>(null);
   const [filterTab, setFilterTab] = useState<'all' | 'correct' | 'incorrect'>('all');
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
 
   const fetchReview = useCallback(async () => {
     if (!attemptId) return;
@@ -679,12 +683,16 @@ export function StudentQuizReviewView() {
                         component="img"
                         src={getImageUrl(q.question_image)}
                         alt="Question context"
+                        onClick={() => setPreviewImage(getImageUrl(q.question_image))}
                         sx={{
                           maxHeight: 280,
                           maxWidth: '100%',
                           borderRadius: 1,
                           objectFit: 'contain',
                           display: 'block',
+                          cursor: 'zoom-in',
+                          transition: 'opacity 0.2s ease',
+                          '&:hover': { opacity: 0.9 },
                         }}
                       />
                     </Box>
@@ -733,7 +741,7 @@ export function StudentQuizReviewView() {
                             borderColor: cardBorder,
                             bgcolor: cardBg,
                             display: 'flex',
-                            alignItems: 'center',
+                            alignItems: 'flex-start',
                             justifyContent: 'space-between',
                             gap: 2,
                             transition: 'all 0.15s ease',
@@ -741,7 +749,7 @@ export function StudentQuizReviewView() {
                         >
                           <Stack
                             direction="row"
-                            alignItems="center"
+                            alignItems="flex-start"
                             spacing={1.5}
                             sx={{ minWidth: 0, flexGrow: 1 }}
                           >
@@ -751,6 +759,7 @@ export function StudentQuizReviewView() {
                                 width: 28,
                                 height: 28,
                                 flexShrink: 0,
+                                mt: 0.25,
                                 borderRadius: '50%',
                                 display: 'flex',
                                 alignItems: 'center',
@@ -768,32 +777,80 @@ export function StudentQuizReviewView() {
                               {letter}
                             </Box>
 
-                            {/* Option Image thumbnail if available */}
-                            {opt.option_image && (
-                              <Box
-                                component="img"
-                                src={getImageUrl(opt.option_image)}
-                                alt="Option"
-                                sx={{
-                                  width: 44,
-                                  height: 44,
-                                  borderRadius: 1,
-                                  objectFit: 'cover',
-                                  flexShrink: 0,
-                                  border: '1px solid',
-                                  borderColor: 'divider',
-                                }}
-                              />
-                            )}
+                            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, minWidth: 0, flexGrow: 1 }}>
+                              {/* Option Text */}
+                              {opt.option_text && (
+                                <Typography
+                                  variant="body2"
+                                  fontWeight={wasChosen || isCorrect ? 600 : 400}
+                                  sx={{ wordBreak: 'break-word', pt: 0.5 }}
+                                >
+                                  {opt.option_text}
+                                </Typography>
+                              )}
 
-                            {/* Option Text */}
-                            <Typography
-                              variant="body2"
-                              fontWeight={wasChosen || isCorrect ? 600 : 400}
-                              sx={{ wordBreak: 'break-word' }}
-                            >
-                              {opt.option_text}
-                            </Typography>
+                              {/* Option Image with zoom */}
+                              {opt.option_image && (
+                                <Box
+                                  sx={{
+                                    position: 'relative',
+                                    display: 'inline-flex',
+                                    maxWidth: { xs: '100%', sm: 360 },
+                                    borderRadius: 1.5,
+                                    overflow: 'hidden',
+                                    border: '1px solid',
+                                    borderColor: 'divider',
+                                    bgcolor: 'background.neutral',
+                                    p: 0.75,
+                                    cursor: 'zoom-in',
+                                    transition: 'all 0.2s ease',
+                                    '&:hover': {
+                                      borderColor: 'primary.main',
+                                      boxShadow: theme.customShadows?.z4 || 2,
+                                    },
+                                  }}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setPreviewImage(getImageUrl(opt.option_image));
+                                  }}
+                                >
+                                  <Box
+                                    component="img"
+                                    src={getImageUrl(opt.option_image)}
+                                    alt="Option"
+                                    sx={{
+                                      display: 'block',
+                                      maxHeight: 160,
+                                      maxWidth: '100%',
+                                      objectFit: 'contain',
+                                      borderRadius: 1,
+                                    }}
+                                  />
+                                  <Box
+                                    sx={{
+                                      position: 'absolute',
+                                      bottom: 8,
+                                      right: 8,
+                                      bgcolor: 'rgba(0,0,0,0.65)',
+                                      color: 'common.white',
+                                      px: 0.85,
+                                      py: 0.35,
+                                      borderRadius: 0.75,
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      gap: 0.5,
+                                      fontSize: '0.72rem',
+                                      fontWeight: 600,
+                                      pointerEvents: 'none',
+                                      backdropFilter: 'blur(2px)',
+                                    }}
+                                  >
+                                    <Iconify icon="solar:magnifer-zoom-in-bold" width={13} />
+                                    Zoom
+                                  </Box>
+                                </Box>
+                              )}
+                            </Box>
                           </Stack>
 
                           {/* Choice status badges */}
@@ -856,7 +913,7 @@ export function StudentQuizReviewView() {
                             color="info.darker"
                             sx={{ mb: 0.5 }}
                           >
-                            Teacher&apos;s Explanation
+                            Answer Explanation
                           </Typography>
                           <Typography
                             variant="body2"
@@ -900,6 +957,44 @@ export function StudentQuizReviewView() {
           </Button>
         </Stack>
       </Stack>
+
+      {/* Enlarged Image Preview Lightbox Dialog */}
+      <Dialog
+        open={Boolean(previewImage)}
+        onClose={() => setPreviewImage(null)}
+        maxWidth="md"
+        fullWidth
+        PaperProps={{
+          sx: {
+            bgcolor: 'background.paper',
+            p: 2,
+            borderRadius: 2,
+          },
+        }}
+      >
+        <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 1 }}>
+          <IconButton onClick={() => setPreviewImage(null)} size="small" aria-label="Close preview">
+            <Iconify icon="solar:close-circle-bold" width={24} />
+          </IconButton>
+        </Box>
+        <DialogContent sx={{ p: 0, textAlign: 'center', overflow: 'auto', maxHeight: '80vh' }}>
+          {previewImage && (
+            <Box
+              component="img"
+              src={previewImage}
+              alt="Enlarged view"
+              sx={{
+                maxWidth: '100%',
+                maxHeight: '75vh',
+                objectFit: 'contain',
+                borderRadius: 1.5,
+                boxShadow: theme.customShadows?.z16 || 4,
+                mx: 'auto',
+              }}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </DashboardContent>
   );
 }

@@ -63,9 +63,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
     return user;
   }, []);
 
-  // REGISTER
-  const register = useCallback(async (data: any) => {
-    const response = await axiosInstance.post('/auth/register', data);
+  // GOOGLE LOGIN
+  const loginWithGoogle = useCallback(async (idToken: string) => {
+    const response = await axiosInstance.post('/auth/google', { id_token: idToken });
     const { token, user } = response.data.data;
 
     localStorage.setItem('accessToken', token);
@@ -74,6 +74,31 @@ export function AuthProvider({ children }: AuthProviderProps) {
       loading: false,
       user,
     });
+
+    return user;
+  }, []);
+
+  // REGISTER
+  const register = useCallback(async (data: any) => {
+    const response = await axiosInstance.post('/auth/register', data);
+    const responseData = response.data.data;
+
+    // Only set token if backend returned an active token (e.g. if verification is ever bypassed)
+    if (responseData?.token) {
+      localStorage.setItem('accessToken', responseData.token);
+      setState({
+        loading: false,
+        user: responseData.user,
+      });
+    }
+
+    return response.data;
+  }, []);
+
+  // RESEND VERIFICATION
+  const resendVerification = useCallback(async (email: string) => {
+    const response = await axiosInstance.post('/auth/resend-verification', { email });
+    return response.data;
   }, []);
 
   // LOGOUT
@@ -146,7 +171,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
       loading: state.loading,
       isAuthenticated: !!state.user,
       login,
+      loginWithGoogle,
       register,
+      resendVerification,
       logout,
       updateProfile,
       changePassword,
@@ -157,7 +184,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
       state.user,
       state.loading,
       login,
+      loginWithGoogle,
       register,
+      resendVerification,
       logout,
       updateProfile,
       changePassword,

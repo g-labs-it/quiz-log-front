@@ -11,6 +11,7 @@ import Table from '@mui/material/Table';
 import Stack from '@mui/material/Stack';
 import Alert from '@mui/material/Alert';
 import Button from '@mui/material/Button';
+import Dialog from '@mui/material/Dialog';
 import Tooltip from '@mui/material/Tooltip';
 import Divider from '@mui/material/Divider';
 import TableRow from '@mui/material/TableRow';
@@ -19,6 +20,7 @@ import TableCell from '@mui/material/TableCell';
 import TableHead from '@mui/material/TableHead';
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
+import DialogContent from '@mui/material/DialogContent';
 import TableContainer from '@mui/material/TableContainer';
 import CircularProgress from '@mui/material/CircularProgress';
 
@@ -62,6 +64,7 @@ export function QuizOverviewView() {
   const [submissions, setSubmissions] = useState<SubmissionItem[]>([]);
   const [loadingSubmissions, setLoadingSubmissions] = useState(false);
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
 
   const fetchQuiz = useCallback(async () => {
     setLoading(true);
@@ -180,20 +183,22 @@ export function QuizOverviewView() {
           {/* Left Column: Summary Card */}
           <Grid size={{ xs: 12, md: 4 }}>
             <Card sx={{ p: 3 }}>
-              {quiz.image && (
-                <Box
-                  component="img"
-                  src={getImageUrl(quiz.image)}
-                  alt={quiz.title}
-                  sx={{
-                    width: '100%',
-                    height: 160,
-                    borderRadius: 1.5,
-                    objectFit: 'cover',
-                    mb: 2.5,
-                  }}
-                />
-              )}
+              <Box
+                component="img"
+                src={
+                  quiz.image
+                    ? getImageUrl(quiz.image)
+                    : `/assets/images/cover/cover-${((quiz.id || 0) % 24) + 1}.webp`
+                }
+                alt={quiz.title}
+                sx={{
+                  width: '100%',
+                  height: 160,
+                  borderRadius: 1.5,
+                  objectFit: 'cover',
+                  mb: 2.5,
+                }}
+              />
               <Typography variant="h6" sx={{ mb: 2 }}>
                 Quiz Details
               </Typography>
@@ -275,7 +280,16 @@ export function QuizOverviewView() {
                         component="img"
                         src={getImageUrl(q.question_image)}
                         alt="Question"
-                        sx={{ maxHeight: 200, maxWidth: '100%', borderRadius: 1 }}
+                        onClick={() => setPreviewImage(getImageUrl(q.question_image))}
+                        sx={{
+                          maxHeight: 240,
+                          maxWidth: '100%',
+                          borderRadius: 1,
+                          objectFit: 'contain',
+                          cursor: 'zoom-in',
+                          transition: 'opacity 0.2s ease',
+                          '&:hover': { opacity: 0.9 },
+                        }}
                       />
                     </Box>
                   )}
@@ -292,30 +306,91 @@ export function QuizOverviewView() {
                         key={opt.id || oIndex}
                         sx={{
                           p: 1.5,
-                          borderRadius: 1,
+                          borderRadius: 1.5,
                           bgcolor: opt.is_correct ? 'success.lighter' : 'background.neutral',
                           border: opt.is_correct ? '1px solid #00a76f' : '1px solid transparent',
                           display: 'flex',
-                          alignItems: 'center',
+                          alignItems: 'flex-start',
                           justifyContent: 'space-between',
+                          gap: 2,
                         }}
                       >
-                        <Stack direction="row" spacing={1.5} alignItems="center">
-                          {opt.option_image && (
-                            <Box
-                              component="img"
-                              src={getImageUrl(opt.option_image)}
-                              alt="Option"
-                              sx={{ width: 32, height: 32, borderRadius: 0.5, objectFit: 'cover' }}
-                            />
-                          )}
-                          <Typography variant="body2">
-                            <strong>{String.fromCharCode(65 + oIndex)}.</strong> {opt.option_text}
+                        <Stack direction="row" spacing={1.5} alignItems="flex-start" sx={{ minWidth: 0, flexGrow: 1 }}>
+                          <Typography variant="body2" sx={{ fontWeight: 700, mt: 0.25, flexShrink: 0 }}>
+                            {String.fromCharCode(65 + oIndex)}.
                           </Typography>
+
+                          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, minWidth: 0, flexGrow: 1 }}>
+                            {opt.option_text && (
+                              <Typography variant="body2" sx={{ fontWeight: opt.is_correct ? 600 : 400 }}>
+                                {opt.option_text}
+                              </Typography>
+                            )}
+
+                            {opt.option_image && (
+                              <Box
+                                sx={{
+                                  position: 'relative',
+                                  display: 'inline-flex',
+                                  maxWidth: { xs: '100%', sm: 320 },
+                                  borderRadius: 1,
+                                  overflow: 'hidden',
+                                  border: '1px solid',
+                                  borderColor: 'divider',
+                                  bgcolor: 'background.paper',
+                                  p: 0.5,
+                                  cursor: 'zoom-in',
+                                  transition: 'all 0.2s ease',
+                                  '&:hover': {
+                                    borderColor: 'primary.main',
+                                    boxShadow: 2,
+                                  },
+                                }}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setPreviewImage(getImageUrl(opt.option_image));
+                                }}
+                              >
+                                <Box
+                                  component="img"
+                                  src={getImageUrl(opt.option_image)}
+                                  alt="Option"
+                                  sx={{
+                                    display: 'block',
+                                    maxHeight: 140,
+                                    maxWidth: '100%',
+                                    objectFit: 'contain',
+                                    borderRadius: 0.5,
+                                  }}
+                                />
+                                <Box
+                                  sx={{
+                                    position: 'absolute',
+                                    bottom: 6,
+                                    right: 6,
+                                    bgcolor: 'rgba(0,0,0,0.65)',
+                                    color: 'common.white',
+                                    px: 0.75,
+                                    py: 0.25,
+                                    borderRadius: 0.5,
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: 0.5,
+                                    fontSize: '0.7rem',
+                                    fontWeight: 600,
+                                    pointerEvents: 'none',
+                                  }}
+                                >
+                                  <Iconify icon="solar:magnifer-zoom-in-bold" width={12} />
+                                  Zoom
+                                </Box>
+                              </Box>
+                            )}
+                          </Box>
                         </Stack>
 
                         {opt.is_correct && (
-                          <Chip label="Correct Answer" color="success" size="small" />
+                          <Chip label="Correct Answer" color="success" size="small" sx={{ flexShrink: 0 }} />
                         )}
                       </Box>
                     ))}
@@ -454,6 +529,43 @@ export function QuizOverviewView() {
           </Scrollbar>
         </Card>
       )}
+
+      {/* Enlarged Image Preview Lightbox Dialog */}
+      <Dialog
+        open={Boolean(previewImage)}
+        onClose={() => setPreviewImage(null)}
+        maxWidth="md"
+        fullWidth
+        PaperProps={{
+          sx: {
+            bgcolor: 'background.paper',
+            p: 2,
+            borderRadius: 2,
+          },
+        }}
+      >
+        <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 1 }}>
+          <IconButton onClick={() => setPreviewImage(null)} size="small" aria-label="Close preview">
+            <Iconify icon="solar:close-circle-bold" width={24} />
+          </IconButton>
+        </Box>
+        <DialogContent sx={{ p: 0, textAlign: 'center', overflow: 'auto', maxHeight: '80vh' }}>
+          {previewImage && (
+            <Box
+              component="img"
+              src={previewImage}
+              alt="Enlarged view"
+              sx={{
+                maxWidth: '100%',
+                maxHeight: '75vh',
+                objectFit: 'contain',
+                borderRadius: 1.5,
+                mx: 'auto',
+              }}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </DashboardContent>
   );
 }

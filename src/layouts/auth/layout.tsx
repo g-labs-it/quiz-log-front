@@ -118,7 +118,7 @@ export function AuthLayout({
       /** **************************************
        * @Styles
        *************************************** */
-      cssVars={{ '--layout-auth-content-width': '420px', ...cssVars }}
+      cssVars={{ '--layout-auth-content-width': '440px', ...cssVars }}
       sx={[
         (theme) => ({
           position: 'relative',

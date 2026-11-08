@@ -12,6 +12,7 @@ import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
 import Checkbox from '@mui/material/Checkbox';
 import RadioGroup from '@mui/material/RadioGroup';
+import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
@@ -70,6 +71,9 @@ export function StudentQuizTakeView() {
   const [timeLeft, setTimeLeft] = useState<number>(0);
   const [submitting, setSubmitting] = useState(false);
   const [confirmSubmitOpen, setConfirmSubmitOpen] = useState(false);
+
+  // Lightbox modal for enlarged image preview
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
 
   // Submit ref to prevent double submission
   const isSubmittingRef = useRef(false);
@@ -331,7 +335,18 @@ export function StudentQuizTakeView() {
                       component="img"
                       src={getImageUrl(currentQuestion.question_image)}
                       alt="Question Image"
-                      sx={{ maxHeight: 240, maxWidth: '100%', borderRadius: 1.5, objectFit: 'contain' }}
+                      onClick={() => setPreviewImage(getImageUrl(currentQuestion.question_image))}
+                      sx={{
+                        maxHeight: 280,
+                        maxWidth: '100%',
+                        borderRadius: 1.5,
+                        objectFit: 'contain',
+                        cursor: 'zoom-in',
+                        border: '1px solid',
+                        borderColor: 'divider',
+                        transition: 'opacity 0.2s ease',
+                        '&:hover': { opacity: 0.9 },
+                      }}
                     />
                   </Box>
                 )}
@@ -363,24 +378,79 @@ export function StudentQuizTakeView() {
                                 <Checkbox
                                   checked={isChecked}
                                   onChange={() => handleMultipleSelect(currentQuestion.id, option.id)}
+                                  sx={{ alignSelf: 'flex-start', mt: -0.5 }}
                                 />
                               }
                               label={
-                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, width: '100%', py: 0.25 }}>
+                                  {option.option_text && (
+                                    <Typography variant="body1" fontWeight={isChecked ? 600 : 400}>
+                                      {option.option_text}
+                                    </Typography>
+                                  )}
                                   {option.option_image && (
                                     <Box
-                                      component="img"
-                                      src={getImageUrl(option.option_image)}
-                                      alt="Option"
-                                      sx={{ width: 40, height: 40, borderRadius: 1, objectFit: 'cover' }}
-                                    />
+                                      sx={{
+                                        position: 'relative',
+                                        display: 'inline-flex',
+                                        maxWidth: { xs: '100%', sm: 360 },
+                                        borderRadius: 1.5,
+                                        overflow: 'hidden',
+                                        border: '1px solid',
+                                        borderColor: 'divider',
+                                        bgcolor: 'background.neutral',
+                                        p: 0.75,
+                                        cursor: 'zoom-in',
+                                        transition: 'all 0.2s ease',
+                                        '&:hover': {
+                                          borderColor: 'primary.main',
+                                          boxShadow: (theme) => theme.customShadows?.z4 || 2,
+                                        },
+                                      }}
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        setPreviewImage(getImageUrl(option.option_image));
+                                      }}
+                                    >
+                                      <Box
+                                        component="img"
+                                        src={getImageUrl(option.option_image)}
+                                        alt="Option"
+                                        sx={{
+                                          display: 'block',
+                                          maxHeight: 160,
+                                          maxWidth: '100%',
+                                          objectFit: 'contain',
+                                          borderRadius: 1,
+                                        }}
+                                      />
+                                      <Box
+                                        sx={{
+                                          position: 'absolute',
+                                          bottom: 8,
+                                          right: 8,
+                                          bgcolor: 'rgba(0,0,0,0.65)',
+                                          color: 'common.white',
+                                          px: 0.85,
+                                          py: 0.35,
+                                          borderRadius: 0.75,
+                                          display: 'flex',
+                                          alignItems: 'center',
+                                          gap: 0.5,
+                                          fontSize: '0.72rem',
+                                          fontWeight: 600,
+                                          pointerEvents: 'none',
+                                          backdropFilter: 'blur(2px)',
+                                        }}
+                                      >
+                                        <Iconify icon="solar:magnifer-zoom-in-bold" width={13} />
+                                        Zoom
+                                      </Box>
+                                    </Box>
                                   )}
-                                  <Typography variant="body1" fontWeight={isChecked ? 600 : 400}>
-                                    {option.option_text}
-                                  </Typography>
                                 </Box>
                               }
-                              sx={{ m: 0, width: '100%' }}
+                              sx={{ m: 0, width: '100%', alignItems: 'flex-start' }}
                             />
                           </Card>
                         );
@@ -412,23 +482,77 @@ export function StudentQuizTakeView() {
                             >
                               <FormControlLabel
                                 value={option.id}
-                                control={<Radio />}
+                                control={<Radio sx={{ alignSelf: 'flex-start', mt: -0.5 }} />}
                                 label={
-                                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, width: '100%', py: 0.25 }}>
+                                    {option.option_text && (
+                                      <Typography variant="body1" fontWeight={isSelected ? 600 : 400}>
+                                        {option.option_text}
+                                      </Typography>
+                                    )}
                                     {option.option_image && (
                                       <Box
-                                        component="img"
-                                        src={getImageUrl(option.option_image)}
-                                        alt="Option"
-                                        sx={{ width: 40, height: 40, borderRadius: 1, objectFit: 'cover' }}
-                                      />
+                                        sx={{
+                                          position: 'relative',
+                                          display: 'inline-flex',
+                                          maxWidth: { xs: '100%', sm: 360 },
+                                          borderRadius: 1.5,
+                                          overflow: 'hidden',
+                                          border: '1px solid',
+                                          borderColor: 'divider',
+                                          bgcolor: 'background.neutral',
+                                          p: 0.75,
+                                          cursor: 'zoom-in',
+                                          transition: 'all 0.2s ease',
+                                          '&:hover': {
+                                            borderColor: 'primary.main',
+                                            boxShadow: (theme) => theme.customShadows?.z4 || 2,
+                                          },
+                                        }}
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          setPreviewImage(getImageUrl(option.option_image));
+                                        }}
+                                      >
+                                        <Box
+                                          component="img"
+                                          src={getImageUrl(option.option_image)}
+                                          alt="Option"
+                                          sx={{
+                                            display: 'block',
+                                            maxHeight: 160,
+                                            maxWidth: '100%',
+                                            objectFit: 'contain',
+                                            borderRadius: 1,
+                                          }}
+                                        />
+                                        <Box
+                                          sx={{
+                                            position: 'absolute',
+                                            bottom: 8,
+                                            right: 8,
+                                            bgcolor: 'rgba(0,0,0,0.65)',
+                                            color: 'common.white',
+                                            px: 0.85,
+                                            py: 0.35,
+                                            borderRadius: 0.75,
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: 0.5,
+                                            fontSize: '0.72rem',
+                                            fontWeight: 600,
+                                            pointerEvents: 'none',
+                                            backdropFilter: 'blur(2px)',
+                                          }}
+                                        >
+                                          <Iconify icon="solar:magnifer-zoom-in-bold" width={13} />
+                                          Zoom
+                                        </Box>
+                                      </Box>
                                     )}
-                                    <Typography variant="body1" fontWeight={isSelected ? 600 : 400}>
-                                      {option.option_text}
-                                    </Typography>
                                   </Box>
                                 }
-                                sx={{ m: 0, width: '100%' }}
+                                sx={{ m: 0, width: '100%', alignItems: 'flex-start' }}
                               />
                             </Card>
                           );
@@ -582,6 +706,44 @@ export function StudentQuizTakeView() {
             Yes, Submit Now
           </Button>
         </DialogActions>
+      </Dialog>
+
+      {/* Enlarged Image Preview Lightbox Dialog */}
+      <Dialog
+        open={Boolean(previewImage)}
+        onClose={() => setPreviewImage(null)}
+        maxWidth="md"
+        fullWidth
+        PaperProps={{
+          sx: {
+            bgcolor: 'background.paper',
+            p: 2,
+            borderRadius: 2,
+          },
+        }}
+      >
+        <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 1 }}>
+          <IconButton onClick={() => setPreviewImage(null)} size="small" aria-label="Close preview">
+            <Iconify icon="solar:close-circle-bold" width={24} />
+          </IconButton>
+        </Box>
+        <DialogContent sx={{ p: 0, textAlign: 'center', overflow: 'auto', maxHeight: '80vh' }}>
+          {previewImage && (
+            <Box
+              component="img"
+              src={previewImage}
+              alt="Enlarged view"
+              sx={{
+                maxWidth: '100%',
+                maxHeight: '75vh',
+                objectFit: 'contain',
+                borderRadius: 1.5,
+                boxShadow: (theme) => theme.customShadows?.z16 || 4,
+                mx: 'auto',
+              }}
+            />
+          )}
+        </DialogContent>
       </Dialog>
     </DashboardContent>
   );
