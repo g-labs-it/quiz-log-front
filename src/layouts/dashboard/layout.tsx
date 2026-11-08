@@ -77,6 +77,9 @@ export function DashboardLayout({
           return false;
         }
         const roles: string[] = Array.isArray(user.role) ? user.role : user.role ? [user.role] : [];
+        if ((item as any).roles && Array.isArray((item as any).roles)) {
+          return (item as any).roles.some((r: string) => roles.includes(r));
+        }
         if ((item as any).role) {
           return roles.includes((item as any).role);
         }

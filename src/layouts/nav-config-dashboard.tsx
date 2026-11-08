@@ -11,6 +11,7 @@ export type NavItem = {
   info?: React.ReactNode;
   permission?: string;
   role?: string;
+  roles?: string[];
   children?: {
     title: string;
     path: string;
@@ -29,7 +30,7 @@ export const navData = [
     title: 'My Quizzes',
     path: '/student/quizzes',
     icon: icon('ic-blog'),
-    role: 'Student',
+    roles: ['Student', 'User'],
   },
   {
     title: 'Master Data',

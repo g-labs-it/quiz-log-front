@@ -22,7 +22,11 @@ export function QuizTableHead({ headLabel }: QuizTableHeadProps) {
           <TableCell
             key={headCell.id}
             align={headCell.align || 'left'}
-            sx={{ fontWeight: 'bold' }}
+            sx={{
+              fontWeight: 'bold',
+              whiteSpace: 'nowrap',
+              ...(headCell.id === 'title' && { minWidth: 220, maxWidth: 320 }),
+            }}
           >
             {headCell.label}
           </TableCell>

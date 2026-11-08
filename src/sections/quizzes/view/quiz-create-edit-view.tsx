@@ -256,6 +256,12 @@ export function QuizCreateEditView() {
     !userRoles.includes('Manager') &&
     !userRoles.includes('Institute Owner');
 
+  const canCreatePublicQuiz =
+    Array.isArray(userRoles) &&
+    userRoles.some((r) => ['Super Admin', 'Admin', 'Manager'].includes(r));
+
+  const [isPublicQuiz, setIsPublicQuiz] = useState(false);
+
   const apiBaseUrl =
     import.meta.env.VITE_STORAGE_URL?.replace(/\/storage\/?$/, '') ||
     import.meta.env.VITE_API_URL?.replace(/\/api\/v1\/?$/, '') ||
@@ -337,11 +343,18 @@ export function QuizCreateEditView() {
       const res = await axiosInstance.get(`/quizzes/${id}`);
       if (res.data && res.data.data) {
         const q = res.data.data;
+        const resolvedInstId =
+          q.institute_id
+            ? String(q.institute_id)
+            : q.class?.institute_id
+            ? String(q.class.institute_id)
+            : '';
+
         setQuizData({
           title: q.title || '',
           description: q.description || '',
           class_id: q.class_id ? String(q.class_id) : '',
-          institute_id: q.institute_id ? String(q.institute_id) : '',
+          institute_id: resolvedInstId,
           scheduled_at: toLocalDatetimeInput(q.scheduled_at),
           duration_minutes: q.duration_minutes || 30,
           pass_marks: q.pass_marks !== null && q.pass_marks !== undefined ? String(q.pass_marks) : '',
@@ -349,6 +362,8 @@ export function QuizCreateEditView() {
           randomize_questions: Boolean(q.randomize_questions),
           randomize_options: Boolean(q.randomize_options),
         });
+
+        setIsPublicQuiz(!q.class_id);
 
         // Load existing quiz cover image path
         if (q.image) setQuizImage(q.image);
@@ -387,6 +402,59 @@ export function QuizCreateEditView() {
       fetchQuizDetail();
     }
   }, [fetchData, fetchQuizDetail, isEditing]);
+
+  // Auto-sync institute_id if class_id is selected and institute_id is empty
+  useEffect(() => {
+    if (quizData.class_id && !quizData.institute_id && classes.length > 0) {
+      const matched = classes.find((c) => String(c.id) === String(quizData.class_id));
+      if (matched?.institute_id) {
+        setQuizData((prev) => ({
+          ...prev,
+          institute_id: String(matched.institute_id),
+        }));
+      }
+    }
+  }, [quizData.class_id, quizData.institute_id, classes]);
+
+  // Handler for institute change: updates institute and clears invalid class
+  const handleInstituteChange = (selectedInstituteId: string) => {
+    setQuizData((prev) => {
+      const stillValidClass =
+        prev.class_id &&
+        (!selectedInstituteId ||
+          classes.some(
+            (c) =>
+              String(c.id) === String(prev.class_id) &&
+              String(c.institute_id) === String(selectedInstituteId)
+          ));
+
+      return {
+        ...prev,
+        institute_id: selectedInstituteId,
+        class_id: stillValidClass ? prev.class_id : '',
+      };
+    });
+  };
+
+  // Handler for class change: updates class and auto-populates institute if not set
+  const handleClassChange = (selectedClassId: string) => {
+    const matchedClass = classes.find((c) => String(c.id) === String(selectedClassId));
+    setQuizData((prev) => ({
+      ...prev,
+      class_id: selectedClassId,
+      institute_id:
+        !prev.institute_id && matchedClass?.institute_id
+          ? String(matchedClass.institute_id)
+          : prev.institute_id,
+    }));
+  };
+
+  // Classes filtered by the selected institute (for non-teachers)
+  const filteredClasses = classes.filter((cls) => {
+    if (isTeacher) return true;
+    if (!quizData.institute_id) return true;
+    return String(cls.institute_id) === String(quizData.institute_id);
+  });
 
   // Question & Option Handlers (Immutable State Updates)
   const handleAddQuestion = () => {
@@ -510,15 +578,18 @@ export function QuizCreateEditView() {
     // Quiz-level fields
     fd.append('title', quizData.title);
     fd.append('description', quizData.description || '');
-    if (quizData.class_id) fd.append('class_id', quizData.class_id);
-    if (quizData.institute_id) fd.append('institute_id', quizData.institute_id);
-    if (quizData.scheduled_at) {
+    if (!isPublicQuiz && quizData.class_id) fd.append('class_id', quizData.class_id);
+    if (!isPublicQuiz && quizData.institute_id) fd.append('institute_id', quizData.institute_id);
+    if (!isPublicQuiz && quizData.scheduled_at) {
       const localDate = new Date(quizData.scheduled_at);
       if (!isNaN(localDate.getTime())) {
         fd.append('scheduled_at', localDate.toISOString());
       } else {
         fd.append('scheduled_at', quizData.scheduled_at);
       }
+    } else if (isPublicQuiz) {
+      // Automatically set to today/now for public quizzes
+      fd.append('scheduled_at', new Date().toISOString());
     }
     fd.append('duration_minutes', String(quizData.duration_minutes));
     if (quizData.pass_marks) fd.append('pass_marks', String(quizData.pass_marks));
@@ -574,6 +645,12 @@ export function QuizCreateEditView() {
     try {
       if (isTeacher && !quizData.class_id) {
         setErrorMsg('Please select a class for this quiz.');
+        setSubmitLoading(false);
+        return;
+      }
+
+      if (!canCreatePublicQuiz && !quizData.class_id && !quizData.institute_id) {
+        setErrorMsg('Please select an institute or class for this quiz.');
         setSubmitLoading(false);
         return;
       }
@@ -710,49 +787,109 @@ export function QuizCreateEditView() {
                 />
               </Box>
 
-              <FormControl fullWidth required={isTeacher}>
-                <InputLabel>Class {isTeacher ? '(Required for Teachers)' : ''}</InputLabel>
-                <Select
-                  label={`Class ${isTeacher ? '(Required for Teachers)' : ''}`}
-                  value={quizData.class_id}
-                  onChange={(e) => setQuizData({ ...quizData, class_id: e.target.value })}
+              {/* Public Quiz Checkbox (Admin & Manager only) */}
+              {canCreatePublicQuiz && (
+                <Box
+                  sx={{
+                    p: 2,
+                    borderRadius: 1.5,
+                    bgcolor: isPublicQuiz ? 'primary.lighter' : 'background.neutral',
+                    border: '1px solid',
+                    borderColor: isPublicQuiz ? 'primary.main' : 'divider',
+                    transition: 'all 0.2s ease',
+                  }}
                 >
-                  <MenuItem value="">Select Target Class</MenuItem>
-                  {classes.map((cls) => (
-                    <MenuItem key={cls.id} value={cls.id}>
-                      {cls.name}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-
-              {!isTeacher && (
-                <FormControl fullWidth>
-                  <InputLabel>Institute (Optional)</InputLabel>
-                  <Select
-                    label="Institute (Optional)"
-                    value={quizData.institute_id}
-                    onChange={(e) => setQuizData({ ...quizData, institute_id: e.target.value })}
-                  >
-                    <MenuItem value="">Select Institute</MenuItem>
-                    {institutes.map((inst) => (
-                      <MenuItem key={inst.id} value={inst.id}>
-                        {inst.name}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
+                  <FormControlLabel
+                    sx={{ alignItems: 'flex-start', m: 0 }}
+                    control={
+                      <Checkbox
+                        checked={isPublicQuiz}
+                        onChange={(e) => {
+                          const checked = e.target.checked;
+                          setIsPublicQuiz(checked);
+                          if (checked) {
+                            setQuizData((prev) => ({
+                              ...prev,
+                              class_id: '',
+                              institute_id: '',
+                              scheduled_at: '',
+                            }));
+                          }
+                        }}
+                        color="primary"
+                        sx={{ p: 0.5, mr: 1 }}
+                      />
+                    }
+                    label={
+                      <Box>
+                        <Typography variant="subtitle2" fontWeight={600}>
+                          Public Quiz
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          Open to all registered platform users without assigning to a specific institute or class.
+                        </Typography>
+                      </Box>
+                    }
+                  />
+                </Box>
               )}
 
-              <TextField
-                fullWidth
-                type="datetime-local"
-                label="Scheduled Start Date & Time"
-                value={quizData.scheduled_at}
-                onChange={(e) => setQuizData({ ...quizData, scheduled_at: e.target.value })}
-                slotProps={{ inputLabel: { shrink: true } }}
-                helperText="When the quiz will open for students"
-              />
+              {!isPublicQuiz && (
+                <>
+                  {!isTeacher && (
+                    <FormControl fullWidth>
+                      <InputLabel>Institute</InputLabel>
+                      <Select
+                        label="Institute"
+                        value={quizData.institute_id}
+                        onChange={(e) => handleInstituteChange(e.target.value)}
+                      >
+                        <MenuItem value="">Select Institute</MenuItem>
+                        {institutes.map((inst) => (
+                          <MenuItem key={inst.id} value={String(inst.id)}>
+                            {inst.name}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                  )}
+
+                  <FormControl fullWidth required={isTeacher}>
+                    <InputLabel>Class {isTeacher ? '(Required for Teachers)' : ''}</InputLabel>
+                    <Select
+                      label={`Class ${isTeacher ? '(Required for Teachers)' : ''}`}
+                      value={quizData.class_id}
+                      onChange={(e) => handleClassChange(e.target.value)}
+                    >
+                      <MenuItem value="">Select Target Class</MenuItem>
+                      {filteredClasses.length === 0 && quizData.institute_id && (
+                        <MenuItem value="" disabled>
+                          No classes found for this institute
+                        </MenuItem>
+                      )}
+                      {filteredClasses.map((cls) => {
+                        const teacherName = cls.teacher?.name;
+                        const label = teacherName ? `${cls.name} - ${teacherName}` : cls.name;
+                        return (
+                          <MenuItem key={cls.id} value={String(cls.id)}>
+                            {label}
+                          </MenuItem>
+                        );
+                      })}
+                    </Select>
+                  </FormControl>
+
+                  <TextField
+                    fullWidth
+                    type="datetime-local"
+                    label="Scheduled Start Date & Time"
+                    value={quizData.scheduled_at}
+                    onChange={(e) => setQuizData({ ...quizData, scheduled_at: e.target.value })}
+                    slotProps={{ inputLabel: { shrink: true } }}
+                    helperText="When the quiz will open for students"
+                  />
+                </>
+              )}
 
               <Grid container spacing={2}>
                 <Grid size={6}>

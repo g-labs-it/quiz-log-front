@@ -155,7 +155,7 @@ export function StudentQuizzesView() {
               No quizzes available
             </Typography>
             <Typography variant="body2" color="text.disabled" sx={{ mt: 1 }}>
-              {search ? 'Try adjusting your search criteria.' : 'Your teachers have not published any quizzes for your classes yet.'}
+              {search ? 'Try adjusting your search criteria.' : 'No quizzes are currently available for you. Check back soon for public assessments or class announcements.'}
             </Typography>
           </Card>
         )}
@@ -187,9 +187,9 @@ export function StudentQuizzesView() {
                     {/* Header info */}
                     <Stack direction="row" justifyContent="space-between" alignItems="flex-start" sx={{ mb: 2 }}>
                       <Chip
-                        label={quiz.class?.name || 'Class'}
+                        label={quiz.class?.name || 'Public Quiz'}
                         size="small"
-                        color="primary"
+                        color={quiz.class?.name ? 'primary' : 'secondary'}
                         variant="outlined"
                         sx={{ fontWeight: 600 }}
                       />
@@ -245,7 +245,7 @@ export function StudentQuizzesView() {
 
                     {/* Quiz meta details */}
                     <Stack spacing={1} sx={{ mt: 'auto', pt: 2, borderTop: '1px dashed', borderColor: 'divider' }}>
-                      {quiz.scheduled_at && (
+                      {quiz.scheduled_at && quiz.class?.name && (
                         <Stack direction="row" alignItems="center" spacing={1}>
                           <Iconify icon="solar:calendar-bold" width={16} color="text.secondary" />
                           <Typography variant="caption" color="text.secondary">

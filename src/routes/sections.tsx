@@ -66,7 +66,11 @@ const renderFallback = () => (
 function IndexRoute() {
   const { user } = useAuth();
   const roles: string[] = Array.isArray(user?.role) ? user.role : user?.role ? [user.role] : [];
-  if (roles.includes('Student')) {
+  if (
+    roles.includes('Student') ||
+    (roles.includes('User') &&
+      !roles.some((r) => ['Super Admin', 'Admin', 'Manager', 'Institute Owner', 'Teacher'].includes(r)))
+  ) {
     return <Navigate to="/student/quizzes" replace />;
   }
   return (
