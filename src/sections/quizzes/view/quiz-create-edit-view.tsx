@@ -253,6 +253,7 @@ export function QuizCreateEditView() {
     userRoles.includes('Teacher') &&
     !userRoles.includes('Super-Admin') &&
     !userRoles.includes('Admin') &&
+    !userRoles.includes('Manager') &&
     !userRoles.includes('Institute Owner');
 
   const apiBaseUrl =

@@ -77,7 +77,7 @@ export function ClassesView() {
 
   // Role helpers — using role names to determine view hierarchy
   const roles: string[] = Array.isArray(user?.role) ? user.role : user?.role ? [user.role] : [];
-  const isSuperOrAdmin = roles.some((r) => ['Super Admin', 'Admin'].includes(r));
+  const isSuperOrAdmin = roles.some((r) => ['Super Admin', 'Admin', 'Manager'].includes(r));
   const isOwner = roles.includes('Institute Owner');
   const isTeacher = roles.includes('Teacher');
 
