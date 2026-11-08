@@ -166,3 +166,4 @@ export function LandingCta({ onScrollToQuizzes }: Props) {
     </Box>
   );
 }
+

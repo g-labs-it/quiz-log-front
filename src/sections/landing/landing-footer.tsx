@@ -98,3 +98,4 @@ export function LandingFooter({ onScrollToQuizzes, onScrollToFeatures }: Props) 
     </Box>
   );
 }
+
