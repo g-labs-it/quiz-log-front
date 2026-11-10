@@ -10,29 +10,69 @@ import { Iconify } from 'src/components/iconify';
 
 export function LandingStudentMosaic() {
   return (
-    <Box sx={{ py: { xs: 8, md: 12 }, bgcolor: 'background.paper' }}>
+    <Box sx={{ py: { xs: 9, md: 14 }, bgcolor: '#F5F4EB', borderTop: '1px solid rgba(10, 10, 10, 0.06)' }}>
       <Container maxWidth="lg">
-        {/* Header (Matching Design 1) */}
-        <Stack spacing={1.5} sx={{ textAlign: 'center', mb: { xs: 6, md: 8 } }}>
+        {/* Header - 100% Centered */}
+        <Stack
+          spacing={1.75}
+          alignItems="center"
+          justifyContent="center"
+          sx={{ textAlign: 'center', mb: { xs: 6, md: 8 }, width: '100%' }}
+        >
+          <Box sx={{ display: 'inline-flex', justifyContent: 'center' }}>
+            <Box
+              sx={{
+                px: 2,
+                py: 0.5,
+                borderRadius: '999px',
+                bgcolor: '#FFFFFF',
+                border: '1px solid rgba(10, 10, 10, 0.08)',
+                color: '#0A0A0A',
+                fontFamily: '"Plus Jakarta Sans", sans-serif',
+                fontWeight: 700,
+                fontSize: '12px',
+                letterSpacing: '0.04em',
+                textTransform: 'uppercase',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 0.85,
+              }}
+            >
+              <Box sx={{ width: 7, height: 7, borderRadius: '50%', bgcolor: '#36B37E' }} />
+              Proven Results
+            </Box>
+          </Box>
           <Typography
-            variant="h2"
             sx={{
-              fontWeight: 900,
-              fontSize: { xs: '2rem', md: '2.75rem' },
-              color: 'text.primary',
-              letterSpacing: -0.5,
+              fontFamily: '"Plus Jakarta Sans", "DM Sans Variable", sans-serif',
+              fontWeight: 800,
+              fontSize: { xs: '2.2rem', md: '2.9rem' },
+              color: '#0A0A0A',
+              letterSpacing: '-0.035em',
+              textAlign: 'center',
+              width: '100%',
             }}
           >
-            Be the top on the list
+            Be the Top on the List
           </Typography>
-          <Typography variant="body1" sx={{ color: 'text.secondary', maxWidth: 600, mx: 'auto', fontSize: 16 }}>
-            Top scores are made in daily practice. Join a community of thousands of students aiming for
-            the highest percentiles.
+          <Typography
+            sx={{
+              fontFamily: '"Plus Jakarta Sans", sans-serif',
+              color: '#637381',
+              maxWidth: 580,
+              mx: 'auto',
+              textAlign: 'center',
+              width: '100%',
+              fontSize: { xs: '15px', md: '16.5px' },
+            }}
+          >
+            Top scores are earned through consistent daily drills. Join a community of thousands
+            achieving their dream exam percentiles.
           </Typography>
         </Stack>
 
-        {/* Asymmetrical Masonry Photo Grid (Exact Design 1 look) */}
-        <Box sx={{ maxWidth: 880, mx: 'auto' }}>
+        {/* Asymmetrical Bauhaus Photo & Color Grid */}
+        <Box sx={{ maxWidth: 920, mx: 'auto' }}>
           <Grid container spacing={2.5}>
             {/* Col 1 */}
             <Grid size={{ xs: 6, sm: 3 }}>
@@ -45,32 +85,46 @@ export function LandingStudentMosaic() {
                     width: '100%',
                     height: 180,
                     objectFit: 'cover',
-                    borderRadius: 3,
-                    boxShadow: '0 8px 24px rgba(0, 0, 0, 0.08)',
+                    borderRadius: '22px',
+                    boxShadow: '0 8px 24px rgba(1, 23, 56, 0.08)',
+                    border: '1px solid rgba(1, 23, 56, 0.06)',
                   }}
                 />
                 <Box
                   sx={{
                     height: 140,
-                    borderRadius: 3,
-                    bgcolor: '#7928CA',
-                    background: 'linear-gradient(135deg, #7928CA 0%, #4C1D95 100%)',
+                    borderRadius: '22px',
+                    bgcolor: '#011738',
                     display: 'flex',
                     flexDirection: 'column',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    color: 'common.white',
+                    color: '#FFFFFF',
                     p: 2,
                     textAlign: 'center',
-                    boxShadow: '0 8px 24px rgba(121, 40, 202, 0.25)',
+                    boxShadow: '0 12px 28px rgba(1, 23, 56, 0.15)',
                   }}
                 >
-                  <Iconify icon="solar:medal-ribbons-star-bold" width={32} />
-                  <Typography variant="subtitle2" sx={{ fontWeight: 800, mt: 1 }}>
+                  <Iconify icon="solar:medal-ribbons-star-bold" width={32} color="#FDC745" />
+                  <Typography
+                    sx={{
+                      fontFamily: '"Plus Jakarta Sans", sans-serif',
+                      fontWeight: 800,
+                      fontSize: '15px',
+                      mt: 1,
+                      color: '#FFFFFF',
+                    }}
+                  >
                     Grade A Pass
                   </Typography>
-                  <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.8)' }}>
-                    Island Rank #12
+                  <Typography
+                    sx={{
+                      fontFamily: '"Plus Jakarta Sans", sans-serif',
+                      fontSize: '12px',
+                      color: 'rgba(255, 255, 255, 0.75)',
+                    }}
+                  >
+                    National Rank #12
                   </Typography>
                 </Box>
               </Stack>
@@ -82,25 +136,38 @@ export function LandingStudentMosaic() {
                 <Box
                   sx={{
                     height: 140,
-                    borderRadius: 3,
-                    bgcolor: '#00A76F',
-                    background: 'linear-gradient(135deg, #00A76F 0%, #007867 100%)',
+                    borderRadius: '22px',
+                    bgcolor: '#36B37E',
                     display: 'flex',
                     flexDirection: 'column',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    color: 'common.white',
+                    color: '#FFFFFF',
                     p: 2,
                     textAlign: 'center',
-                    boxShadow: '0 8px 24px rgba(0, 167, 111, 0.25)',
+                    boxShadow: '0 12px 28px rgba(54, 179, 126, 0.25)',
                   }}
                 >
-                  <Iconify icon="solar:stars-bold" width={32} color="#FEE140" />
-                  <Typography variant="subtitle2" sx={{ fontWeight: 800, mt: 1 }}>
+                  <Iconify icon="solar:stars-bold" width={32} color="#FDC745" />
+                  <Typography
+                    sx={{
+                      fontFamily: '"Plus Jakarta Sans", sans-serif',
+                      fontWeight: 800,
+                      fontSize: '15px',
+                      mt: 1,
+                      color: '#FFFFFF',
+                    }}
+                  >
                     100% Mastery
                   </Typography>
-                  <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.8)' }}>
-                    Science Stream
+                  <Typography
+                    sx={{
+                      fontFamily: '"Plus Jakarta Sans", sans-serif',
+                      fontSize: '12px',
+                      color: 'rgba(255, 255, 255, 0.85)',
+                    }}
+                  >
+                    STEM & Science Stream
                   </Typography>
                 </Box>
                 <Box
@@ -111,8 +178,9 @@ export function LandingStudentMosaic() {
                     width: '100%',
                     height: 180,
                     objectFit: 'cover',
-                    borderRadius: 3,
-                    boxShadow: '0 8px 24px rgba(0, 0, 0, 0.08)',
+                    borderRadius: '22px',
+                    boxShadow: '0 8px 24px rgba(1, 23, 56, 0.08)',
+                    border: '1px solid rgba(1, 23, 56, 0.06)',
                   }}
                 />
               </Stack>
@@ -124,19 +192,25 @@ export function LandingStudentMosaic() {
                 <Box
                   sx={{
                     height: 110,
-                    borderRadius: 3,
-                    bgcolor: '#FFC107',
-                    background: 'linear-gradient(135deg, #FFE066 0%, #FFC107 100%)',
+                    borderRadius: '22px',
+                    bgcolor: '#FDC745',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    color: '#07271E',
+                    color: '#0A0A0A',
                     p: 2,
-                    boxShadow: '0 8px 24px rgba(255, 193, 7, 0.3)',
+                    boxShadow: '0 10px 24px rgba(253, 199, 69, 0.3)',
                   }}
                 >
-                  <Typography variant="h5" sx={{ fontWeight: 900 }}>
-                    ★ 5.0
+                  <Typography
+                    sx={{
+                      fontFamily: '"Plus Jakarta Sans", sans-serif',
+                      fontWeight: 900,
+                      fontSize: '1.75rem',
+                      letterSpacing: '-0.02em',
+                    }}
+                  >
+                    ★ 5.0 Rating
                   </Typography>
                 </Box>
                 <Box
@@ -147,14 +221,15 @@ export function LandingStudentMosaic() {
                     width: '100%',
                     height: 210,
                     objectFit: 'cover',
-                    borderRadius: 3,
-                    boxShadow: '0 8px 24px rgba(0, 0, 0, 0.08)',
+                    borderRadius: '22px',
+                    boxShadow: '0 8px 24px rgba(1, 23, 56, 0.08)',
+                    border: '1px solid rgba(1, 23, 56, 0.06)',
                   }}
                 />
               </Stack>
             </Grid>
 
-            {/* Col 4 (Tallest portrait like in Design 1) */}
+            {/* Col 4 */}
             <Grid size={{ xs: 6, sm: 3 }}>
               <Box
                 component="img"
@@ -164,8 +239,9 @@ export function LandingStudentMosaic() {
                   width: '100%',
                   height: 345,
                   objectFit: 'cover',
-                  borderRadius: 3,
-                  boxShadow: '0 12px 32px rgba(0, 0, 0, 0.12)',
+                  borderRadius: '22px',
+                  boxShadow: '0 12px 32px rgba(1, 23, 56, 0.12)',
+                  border: '1px solid rgba(1, 23, 56, 0.06)',
                 }}
               />
             </Grid>
@@ -175,4 +251,3 @@ export function LandingStudentMosaic() {
     </Box>
   );
 }
-

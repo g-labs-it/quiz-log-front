@@ -20,7 +20,7 @@ export function LandingFooter({ onScrollToQuizzes, onScrollToFeatures }: Props) 
   const navigate = useNavigate();
 
   return (
-    <Box component="footer" sx={{ bgcolor: '#0B1319', color: 'common.white', pt: 8, pb: 6 }}>
+    <Box component="footer" sx={{ bgcolor: '#011738', color: '#FFFFFF', pt: 9, pb: 6 }}>
       <Container maxWidth="lg">
         <Stack
           direction={{ xs: 'column', md: 'row' }}
@@ -30,17 +30,32 @@ export function LandingFooter({ onScrollToQuizzes, onScrollToFeatures }: Props) 
           sx={{ mb: 6 }}
         >
           {/* Brand Info */}
-          <Box sx={{ maxWidth: 360 }}>
+          <Box sx={{ maxWidth: 380 }}>
             <Stack direction="row" alignItems="center" spacing={1.25} sx={{ mb: 1.5 }}>
-              <Logo sx={{ width: 36, height: 36 }} />
-              <Typography variant="h5" sx={{ fontWeight: 800, color: 'common.white', letterSpacing: 0.5 }}>
-                <Box component="span" sx={{ color: 'primary.main', fontWeight: 900 }}>
+              <Logo sx={{ width: 34, height: 34 }} />
+              <Typography
+                sx={{
+                  fontFamily: '"Plus Jakarta Sans", "DM Sans Variable", sans-serif',
+                  fontWeight: 800,
+                  color: '#FFFFFF',
+                  fontSize: '1.4rem',
+                  letterSpacing: '-0.02em',
+                }}
+              >
+                <Box component="span" sx={{ color: '#FDC745', fontWeight: 900 }}>
                   mcq
                 </Box>
                 pro
               </Typography>
             </Stack>
-            <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.65)', lineHeight: 1.6 }}>
+            <Typography
+              sx={{
+                fontFamily: '"Plus Jakarta Sans", sans-serif',
+                color: 'rgba(255, 255, 255, 0.7)',
+                fontSize: '14.5px',
+                lineHeight: 1.6,
+              }}
+            >
               The modern online examination and MCQ testing platform built for ambitious students and
               passionate educators.
             </Typography>
@@ -50,29 +65,67 @@ export function LandingFooter({ onScrollToQuizzes, onScrollToFeatures }: Props) 
           <Stack direction={{ xs: 'column', sm: 'row' }} spacing={{ xs: 2, sm: 4 }}>
             <Link
               component="button"
-              onClick={onScrollToQuizzes}
-              sx={{ color: 'rgba(255, 255, 255, 0.75)', fontWeight: 600, textDecoration: 'none', '&:hover': { color: 'primary.light' } }}
+              onClick={() => {
+                if (onScrollToQuizzes) {
+                  onScrollToQuizzes();
+                } else {
+                  navigate('/all-quizzes');
+                }
+              }}
+              sx={{
+                fontFamily: '"Plus Jakarta Sans", sans-serif',
+                color: 'rgba(255, 255, 255, 0.8)',
+                fontWeight: 600,
+                fontSize: '14.5px',
+                textDecoration: 'none',
+                transition: 'color 0.2s',
+                '&:hover': { color: '#FDC745' },
+              }}
             >
               Public Quizzes
             </Link>
             <Link
               component="button"
               onClick={onScrollToFeatures}
-              sx={{ color: 'rgba(255, 255, 255, 0.75)', fontWeight: 600, textDecoration: 'none', '&:hover': { color: 'primary.light' } }}
+              sx={{
+                fontFamily: '"Plus Jakarta Sans", sans-serif',
+                color: 'rgba(255, 255, 255, 0.8)',
+                fontWeight: 600,
+                fontSize: '14.5px',
+                textDecoration: 'none',
+                transition: 'color 0.2s',
+                '&:hover': { color: '#FDC745' },
+              }}
             >
               Why mcqpro?
             </Link>
             <Link
               component="button"
               onClick={() => navigate('/sign-in')}
-              sx={{ color: 'rgba(255, 255, 255, 0.75)', fontWeight: 600, textDecoration: 'none', '&:hover': { color: 'primary.light' } }}
+              sx={{
+                fontFamily: '"Plus Jakarta Sans", sans-serif',
+                color: 'rgba(255, 255, 255, 0.8)',
+                fontWeight: 600,
+                fontSize: '14.5px',
+                textDecoration: 'none',
+                transition: 'color 0.2s',
+                '&:hover': { color: '#FDC745' },
+              }}
             >
               Sign In
             </Link>
             <Link
               component="button"
               onClick={() => navigate('/sign-up')}
-              sx={{ color: 'primary.light', fontWeight: 700, textDecoration: 'none', '&:hover': { color: 'common.white' } }}
+              sx={{
+                fontFamily: '"Plus Jakarta Sans", sans-serif',
+                color: '#FDC745',
+                fontWeight: 700,
+                fontSize: '14.5px',
+                textDecoration: 'none',
+                transition: 'color 0.2s',
+                '&:hover': { color: '#FFFFFF' },
+              }}
             >
               Create Account
             </Link>
@@ -87,10 +140,22 @@ export function LandingFooter({ onScrollToQuizzes, onScrollToFeatures }: Props) 
           alignItems="center"
           spacing={2}
         >
-          <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.5)' }}>
+          <Typography
+            sx={{
+              fontFamily: '"Plus Jakarta Sans", sans-serif',
+              color: 'rgba(255, 255, 255, 0.5)',
+              fontSize: '13px',
+            }}
+          >
             &copy; {new Date().getFullYear()} mcqpro. All rights reserved.
           </Typography>
-          <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.5)' }}>
+          <Typography
+            sx={{
+              fontFamily: '"Plus Jakarta Sans", sans-serif',
+              color: 'rgba(255, 255, 255, 0.5)',
+              fontSize: '13px',
+            }}
+          >
             Empowering students with smart, simulated MCQ exams.
           </Typography>
         </Stack>
@@ -98,4 +163,3 @@ export function LandingFooter({ onScrollToQuizzes, onScrollToFeatures }: Props) 
     </Box>
   );
 }
-

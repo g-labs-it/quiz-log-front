@@ -31,8 +31,8 @@ export function LandingChampions({ onScrollToQuizzes }: Props) {
       marks: '49/50 pts',
       avatar: '/assets/images/avatar/avatar-2.webp',
       height: 180,
-      pedestalColor: 'linear-gradient(180deg, #A2B9C8 0%, #768F9F 100%)',
-      medalColor: '#9E9E9E',
+      pedestalColor: 'linear-gradient(180deg, #4361F2 0%, #2A45D4 100%)',
+      medalColor: '#FFFFFF',
       medalIcon: 'solar:medal-star-bold',
       medalLabel: '2nd Place',
     },
@@ -44,8 +44,8 @@ export function LandingChampions({ onScrollToQuizzes }: Props) {
       marks: '50/50 pts',
       avatar: '/assets/images/avatar/avatar-1.webp',
       height: 230,
-      pedestalColor: 'linear-gradient(180deg, #5BE49B 0%, #007867 100%)',
-      medalColor: '#FFC107',
+      pedestalColor: 'linear-gradient(180deg, #36B37E 0%, #0B4E41 100%)',
+      medalColor: '#FDC745',
       medalIcon: 'solar:crown-bold',
       medalLabel: 'Champion • 1st',
     },
@@ -57,8 +57,8 @@ export function LandingChampions({ onScrollToQuizzes }: Props) {
       marks: '48/50 pts',
       avatar: '/assets/images/avatar/avatar-4.webp',
       height: 150,
-      pedestalColor: 'linear-gradient(180deg, #D4AF37 0%, #A67C1E 100%)',
-      medalColor: '#CD7F32',
+      pedestalColor: 'linear-gradient(180deg, #9C5AFF 0%, #7546FF 100%)',
+      medalColor: '#FFFFFF',
       medalIcon: 'solar:medal-ribbon-bold',
       medalLabel: '3rd Place',
     },
@@ -68,67 +68,73 @@ export function LandingChampions({ onScrollToQuizzes }: Props) {
     <Box
       id="champions"
       sx={{
-        py: { xs: 8, md: 12 },
-        bgcolor: 'background.neutral',
+        py: { xs: 9, md: 14 },
+        bgcolor: '#FFFFFF',
         position: 'relative',
         overflow: 'hidden',
-        borderTop: '1px solid',
-        borderBottom: '1px solid',
-        borderColor: 'divider',
+        borderTop: '1px solid rgba(10, 10, 10, 0.06)',
       }}
     >
-      {/* Background Radial Aura (Matching Design 1) */}
-      <Box
-        sx={{
-          position: 'absolute',
-          top: '40%',
-          left: '50%',
-          transform: 'translate(-50%, -50%)',
-          width: 600,
-          height: 600,
-          borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(0, 167, 111, 0.12) 0%, rgba(91, 228, 155, 0) 70%)',
-          filter: 'blur(50px)',
-          pointerEvents: 'none',
-        }}
-      />
-
       <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 1 }}>
-        {/* Header (Design 1 vibe) */}
-        <Stack spacing={1.5} sx={{ textAlign: 'center', mb: { xs: 6, md: 8 } }}>
+        {/* Header - 100% Centered */}
+        <Stack
+          spacing={1.75}
+          alignItems="center"
+          justifyContent="center"
+          sx={{ textAlign: 'center', mb: { xs: 6, md: 8 }, width: '100%' }}
+        >
           <Box sx={{ display: 'inline-flex', justifyContent: 'center' }}>
-            <Chip
-              icon={<Iconify icon="solar:crown-bold" width={18} color="#FFC107" />}
-              label="Hall of Fame"
-              size="small"
+            <Box
               sx={{
-                px: 1.25,
+                px: 2,
                 py: 0.5,
-                fontWeight: 800,
                 borderRadius: '999px',
-                bgcolor: 'primary.lighter',
-                color: 'primary.darker',
-                fontSize: 12,
+                bgcolor: '#F5F4EB',
+                border: '1px solid rgba(10, 10, 10, 0.08)',
+                color: '#0A0A0A',
+                fontFamily: '"Plus Jakarta Sans", sans-serif',
+                fontWeight: 700,
+                fontSize: '12px',
+                letterSpacing: '0.04em',
+                textTransform: 'uppercase',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 1,
               }}
-            />
+            >
+              <Iconify icon="solar:crown-bold" width={16} color="#FDC745" />
+              Hall of Fame
+            </Box>
           </Box>
           <Typography
-            variant="h2"
             sx={{
-              fontWeight: 900,
-              fontSize: { xs: '2rem', md: '2.75rem' },
-              color: 'text.primary',
-              letterSpacing: -0.5,
+              fontFamily: '"Plus Jakarta Sans", "DM Sans Variable", sans-serif',
+              fontWeight: 800,
+              fontSize: { xs: '2.2rem', md: '2.9rem' },
+              color: '#0A0A0A',
+              letterSpacing: '-0.035em',
+              textAlign: 'center',
+              width: '100%',
             }}
           >
             mcqpro Champions
           </Typography>
-          <Typography variant="body1" sx={{ color: 'text.secondary', maxWidth: 620, mx: 'auto', fontSize: 16 }}>
+          <Typography
+            sx={{
+              fontFamily: '"Plus Jakarta Sans", sans-serif',
+              color: '#637381',
+              maxWidth: 580,
+              mx: 'auto',
+              textAlign: 'center',
+              width: '100%',
+              fontSize: { xs: '15px', md: '16.5px' },
+            }}
+          >
             Celebrate this week&apos;s highest test scorers. Consistent practice turns knowledge into victory.
           </Typography>
         </Stack>
 
-        {/* 3D Podium Visualization */}
+        {/* 3D Bauhaus Podium Visualization */}
         <Box
           sx={{
             display: 'flex',
@@ -137,7 +143,7 @@ export function LandingChampions({ onScrollToQuizzes }: Props) {
             gap: { xs: 1.5, sm: 3, md: 4 },
             maxWidth: 780,
             mx: 'auto',
-            mb: 6,
+            mb: 7,
             pt: 4,
           }}
         >
@@ -159,9 +165,9 @@ export function LandingChampions({ onScrollToQuizzes }: Props) {
                   alignItems="center"
                   spacing={1}
                   sx={{
-                    mb: 2,
+                    mb: 2.5,
                     textAlign: 'center',
-                    transition: 'transform 0.3s ease',
+                    transition: 'transform 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
                     '&:hover': { transform: 'scale(1.05)' },
                   }}
                 >
@@ -171,19 +177,17 @@ export function LandingChampions({ onScrollToQuizzes }: Props) {
                       width: isFirst ? 42 : 36,
                       height: isFirst ? 42 : 36,
                       borderRadius: '50%',
-                      bgcolor: isFirst ? '#FFC107' : 'background.paper',
-                      color: isFirst ? '#07271E' : champ.medalColor,
+                      bgcolor: isFirst ? '#FDC745' : '#011738',
+                      color: isFirst ? '#0A0A0A' : '#FFFFFF',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      boxShadow: '0 6px 16px rgba(0, 0, 0, 0.15)',
-                      border: '2px solid',
-                      borderColor: champ.medalColor,
+                      boxShadow: '0 6px 16px rgba(1, 23, 56, 0.15)',
                       mb: -1,
                       zIndex: 2,
                     }}
                   >
-                    <Iconify icon={champ.medalIcon} width={isFirst ? 24 : 20} />
+                    <Iconify icon={champ.medalIcon} width={isFirst ? 22 : 18} />
                   </Box>
 
                   {/* Avatar */}
@@ -191,30 +195,37 @@ export function LandingChampions({ onScrollToQuizzes }: Props) {
                     src={champ.avatar}
                     alt={champ.name}
                     sx={{
-                      width: isFirst ? 84 : 68,
-                      height: isFirst ? 84 : 68,
-                      border: '4px solid',
-                      borderColor: isFirst ? '#FFC107' : '#FFFFFF',
+                      width: isFirst ? 86 : 70,
+                      height: isFirst ? 86 : 70,
+                      border: '4px solid #FFFFFF',
                       boxShadow: isFirst
-                        ? '0 10px 24px rgba(255, 193, 7, 0.4)'
-                        : '0 6px 18px rgba(0, 0, 0, 0.12)',
+                        ? '0 12px 28px rgba(253, 199, 69, 0.35)'
+                        : '0 8px 20px rgba(1, 23, 56, 0.12)',
                     }}
                   />
 
                   {/* Name & Subject */}
                   <Box>
                     <Typography
-                      variant="subtitle1"
                       sx={{
+                        fontFamily: '"Plus Jakarta Sans", sans-serif',
                         fontWeight: 800,
                         fontSize: { xs: 13, sm: 15 },
-                        lineHeight: 1.2,
-                        color: 'text.primary',
+                        lineHeight: 1.25,
+                        color: '#0A0A0A',
                       }}
                     >
                       {champ.name}
                     </Typography>
-                    <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block', fontSize: 11 }}>
+                    <Typography
+                      sx={{
+                        fontFamily: '"Plus Jakarta Sans", sans-serif',
+                        color: '#637381',
+                        display: 'block',
+                        fontSize: 12,
+                        mt: 0.25,
+                      }}
+                    >
                       {champ.subject}
                     </Typography>
                   </Box>
@@ -224,34 +235,34 @@ export function LandingChampions({ onScrollToQuizzes }: Props) {
                     label={champ.score}
                     size="small"
                     sx={{
-                      fontWeight: 900,
+                      fontFamily: '"Plus Jakarta Sans", sans-serif',
+                      fontWeight: 800,
                       borderRadius: '999px',
                       fontSize: 12,
-                      bgcolor: isFirst ? '#FEE140' : 'background.paper',
-                      color: isFirst ? '#07271E' : 'text.primary',
-                      border: '1px solid',
-                      borderColor: 'divider',
-                      boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
+                      bgcolor: '#FFFFFF',
+                      color: '#0A0A0A',
+                      border: '1px solid rgba(10, 10, 10, 0.08)',
+                      boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04)',
                     }}
                   />
                 </Stack>
 
-                {/* 3D Pedestal Pillar (Design 1 vibe) */}
+                {/* Pedestal Pillar */}
                 <Box
                   sx={{
                     width: '100%',
                     height: { xs: champ.height * 0.7, sm: champ.height },
                     background: champ.pedestalColor,
-                    borderRadius: '20px 20px 4px 4px',
+                    borderRadius: '24px 24px 6px 6px',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
                     boxShadow: isFirst
-                      ? '0 16px 36px rgba(0, 120, 103, 0.35)'
-                      : '0 10px 24px rgba(0, 0, 0, 0.1)',
+                      ? '0 20px 44px rgba(253, 199, 69, 0.3)'
+                      : '0 14px 32px rgba(1, 23, 56, 0.14)',
                     position: 'relative',
                     overflow: 'hidden',
-                    border: '1.5px solid rgba(255, 255, 255, 0.35)',
+                    border: '1.5px solid rgba(255, 255, 255, 0.4)',
                     '&::before': {
                       content: '""',
                       position: 'absolute',
@@ -264,12 +275,12 @@ export function LandingChampions({ onScrollToQuizzes }: Props) {
                   }}
                 >
                   <Typography
-                    variant="h2"
                     sx={{
+                      fontFamily: '"Plus Jakarta Sans", sans-serif',
                       fontWeight: 900,
-                      fontSize: { xs: '2.5rem', sm: '3.5rem' },
-                      color: 'rgba(255, 255, 255, 0.92)',
-                      textShadow: '0 4px 12px rgba(0, 0, 0, 0.2)',
+                      fontSize: { xs: '2.5rem', sm: '3.6rem' },
+                      color: isFirst ? '#0A0A0A' : 'rgba(255, 255, 255, 0.95)',
+                      textShadow: isFirst ? 'none' : '0 4px 12px rgba(0, 0, 0, 0.2)',
                     }}
                   >
                     {champ.rank}
@@ -284,22 +295,24 @@ export function LandingChampions({ onScrollToQuizzes }: Props) {
         <Stack direction="row" justifyContent="center">
           <Button
             size="large"
-            variant="contained"
             onClick={isAuthenticated ? onScrollToQuizzes : () => navigate('/sign-up')}
-            endIcon={<Iconify icon="solar:arrow-right-bold" />}
             sx={{
-              py: 1.5,
-              px: 4,
-              fontWeight: 800,
-              fontSize: 15,
+              bgcolor: '#0A0A0A',
+              color: '#FFFFFF',
               borderRadius: '999px',
-              bgcolor: 'primary.main',
-              color: 'common.white',
-              boxShadow: '0 10px 24px rgba(0, 167, 111, 0.4)',
+              px: 4.5,
+              py: 1.6,
+              height: 54,
+              fontFamily: '"Plus Jakarta Sans", "DM Sans Variable", sans-serif',
+              fontWeight: 700,
+              fontSize: '15px',
+              textTransform: 'none',
+              boxShadow: '0 4px 14px rgba(10, 10, 10, 0.08)',
               transition: 'all 0.25s ease',
               '&:hover': {
+                bgcolor: '#222222',
                 transform: 'translateY(-2px)',
-                boxShadow: '0 14px 32px rgba(0, 167, 111, 0.55)',
+                boxShadow: '0 12px 28px rgba(10, 10, 10, 0.2)',
               },
             }}
           >

@@ -1,4 +1,4 @@
-import { useRef, useState, useCallback } from 'react';
+import { useRef, useCallback } from 'react';
 
 import Box from '@mui/material/Box';
 
@@ -17,7 +17,6 @@ import { LandingQuizzesShowcase } from '../landing-quizzes-showcase';
 // ----------------------------------------------------------------------
 
 export function LandingView() {
-  const [searchQuery, setSearchQuery] = useState('');
   const quizzesRef = useRef<HTMLDivElement>(null);
   const championsRef = useRef<HTMLDivElement>(null);
   const howItWorksRef = useRef<HTMLDivElement>(null);
@@ -61,9 +60,9 @@ export function LandingView() {
         {/* 2. Play, Learn and Master (3 Portrait Photo Cards from Design 1) */}
         <LandingPillars onScrollToQuizzes={scrollToQuizzes} />
 
-        {/* 3. Real Live Public Quizzes Showcase with Search & Filters */}
+        {/* 3. Real Live Public Quizzes Showcase (Latest 3) */}
         <div ref={quizzesRef}>
-          <LandingQuizzesShowcase searchQuery={searchQuery} onSearchChange={setSearchQuery} />
+          <LandingQuizzesShowcase />
         </div>
 
         {/* 4. mcqpro Champions 3D Podium & Leaderboard (from Design 1) */}

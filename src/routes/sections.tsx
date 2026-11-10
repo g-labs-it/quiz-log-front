@@ -43,6 +43,7 @@ export const StudentQuizzesPage = lazy(() => import('src/pages/student-quizzes')
 export const StudentQuizTakePage = lazy(() => import('src/pages/student-quiz-take'));
 export const StudentQuizReviewPage = lazy(() => import('src/pages/student-quiz-review'));
 export const LandingPage = lazy(() => import('src/pages/landing'));
+export const AllQuizzesPage = lazy(() => import('src/pages/all-quizzes'));
 export const Page404 = lazy(() => import('src/pages/page-not-found'));
 
 const renderFallback = () => (
@@ -71,6 +72,22 @@ export const routesSection: RouteObject[] = [
     element: (
       <Suspense fallback={renderFallback()}>
         <LandingPage />
+      </Suspense>
+    ),
+  },
+  {
+    path: 'all-quizzes',
+    element: (
+      <Suspense fallback={renderFallback()}>
+        <AllQuizzesPage />
+      </Suspense>
+    ),
+  },
+  {
+    path: 'public-quizzes',
+    element: (
+      <Suspense fallback={renderFallback()}>
+        <AllQuizzesPage />
       </Suspense>
     ),
   },
